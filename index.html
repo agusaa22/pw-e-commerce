@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Aurevia, tienda e-commerce de velas con diseño elegante y estética premium."
+  />
+  <title>Aurevia | Velas premium</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR -->
+  <div class="topbar">
+    <p>Envío gratis regular en todos los productos</p>
+  </div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-top container">
+      <a href="#" class="login-link" aria-label="Ir a iniciar sesión">
+        <span class="icon">◌</span>
+        <span>Iniciar sesión</span>
+      </a>
+    </div>
+
+    <div class="header-brand container">
+      <a href="#" class="brand" aria-label="Ir al inicio de Aurevia">
+        <h1>AUREVIA</h1>
+      </a>
+    </div>
+
+    <div class="header-bottom container">
+      <nav class="main-nav" aria-label="Navegación principal">
+        <ul>
+          <li><a href="#categorias">AROMAS</a></li>
+          <li><a href="#destacados">COLECCIÓN</a></li>
+          <li><a href="#categorias">EDICIONES</a></li>
+          <li><a href="#footer">CONTACTO</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions" aria-label="Acciones del usuario">
+        <button class="icon-button" aria-label="Buscar">⌕</button>
+        <button class="icon-button" aria-label="Favoritos">♡</button>
+        <button class="icon-button" aria-label="Carrito">🛍</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content container">
+        <p class="hero-kicker">Colección nueva</p>
+        <h2>Velas de luz, aroma y ritual</h2>
+        <p class="hero-description">
+          Entrá en un universo de velas delicadas, diseño sofisticado y calidez contemporánea.
+          Una experiencia premium pensada para transformar cada ambiente.
+        </p>
+
+        <div class="hero-buttons">
+          <a href="#destacados" class="btn btn-primary">Compra ahora</a>
+          <a href="#categorias" class="btn btn-secondary">Descubrí más</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORÍAS -->
+    <section class="categories-section container" id="categorias">
+      <div class="section-heading">
+        <span class="section-label">Categorías</span>
+        <h2>Elegí tu estilo de aroma</h2>
+        <p>
+          Esta sección ordena el catálogo desde el frontend estático y después
+          te va a servir para filtros con JavaScript, React o datos desde Supabase.
+        </p>
+      </div>
+
+      <div class="categories-grid">
+        <article class="category-card">
+          <div class="category-visual category-rose"></div>
+          <h3>Florales</h3>
+          <p>Rosa, peonía, jazmín y perfumes suaves para espacios delicados.</p>
+          <a href="#">Ver categoría</a>
+        </article>
+
+        <article class="category-card">
+          <div class="category-visual category-cream"></div>
+          <h3>Cremosas</h3>
+          <p>Vainilla, coco y acordes envolventes para un clima cálido y elegante.</p>
+          <a href="#">Ver categoría</a>
+        </article>
+
+        <article class="category-card">
+          <div class="category-visual category-fresh"></div>
+          <h3>Fresh</h3>
+          <p>Cítricos, lino limpio y notas verdes para una sensación luminosa.</p>
+          <a href="#">Ver categoría</a>
+        </article>
+
+        <article class="category-card">
+          <div class="category-visual category-gold"></div>
+          <h3>Luxury</h3>
+          <p>Ámbar, sándalo y fragancias más intensas con acabado premium.</p>
+          <a href="#">Ver categoría</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS DESTACADOS -->
+    <section class="featured-section" id="destacados">
+      <div class="container">
+        <div class="section-heading">
+          <span class="section-label">Destacados</span>
+          <h2>Productos destacados</h2>
+          <p>
+            Cada card de producto está pensada como base reutilizable.
+            Después la podés poblar con fetch, un array en JavaScript
+            o datos reales desde una base en Supabase.
+          </p>
+        </div>
+
+        <div class="products-grid">
+          <article class="product-card">
+            <div class="product-image product-one"></div>
+            <div class="product-info">
+              <span class="product-type">Floral · 220 g</span>
+              <h3>Rose Velvet</h3>
+              <p>Rosa empolvada, peonía blanca y un fondo suave de almizcle.</p>
+              <div class="product-footer">
+                <span class="price">$22.500</span>
+                <button class="product-btn">Agregar</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card">
+            <div class="product-image product-two"></div>
+            <div class="product-info">
+              <span class="product-type">Cremosa · 250 g</span>
+              <h3>Crème Lumière</h3>
+              <p>Vainilla tostada, haba tonka y una salida cálida y cremosa.</p>
+              <div class="product-footer">
+                <span class="price">$24.900</span>
+                <button class="product-btn">Agregar</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card">
+            <div class="product-image product-three"></div>
+            <div class="product-info">
+              <span class="product-type">Fresh · 200 g</span>
+              <h3>Blush Cotton</h3>
+              <p>Lino limpio, pera blanca y notas frescas para todos los días.</p>
+              <div class="product-footer">
+                <span class="price">$21.800</span>
+                <button class="product-btn">Agregar</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card">
+            <div class="product-image product-four"></div>
+            <div class="product-info">
+              <span class="product-type">Luxury · 300 g</span>
+              <h3>Golden Amber</h3>
+              <p>Ámbar suave, madera cálida y una estela elegante de noche.</p>
+              <div class="product-footer">
+                <span class="price">$27.300</span>
+                <button class="product-btn">Agregar</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" id="footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>AUREVIA</h3>
+        <p>
+          Tienda e-commerce de velas con una identidad elegante, cálida y premium,
+          desarrollada para Programación Web.
+        </p>
+      </div>
+
+      <div>
+        <h4>Navegación</h4>
+        <ul>
+          <li><a href="#">Inicio</a></li>
+          <li><a href="#categorias">Categorías</a></li>
+          <li><a href="#destacados">Destacados</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="#">Envíos</a></li>
+          <li><a href="#">Pagos</a></li>
+          <li><a href="#">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="mailto:hola@aurevia.com">hola@aurevia.com</a></li>
+          <li><a href="tel:+541100000000">+54 11 0000 0000</a></li>
+          <li>Buenos Aires, Argentina</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom container">
+      <p>© 2026 Aurevia. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
