@@ -11,6 +11,7 @@
   no necesitamos estado ni fetch dinámico.
 */
 
+import Link from 'next/link'
 import styles from './Categories.module.css'
 
 /*
@@ -96,14 +97,9 @@ export default function Categories() {
               <div className={styles.cardBody}>
                 <h3>{cat.nombre}</h3>
                 <p>{cat.descripcion}</p>
-                {/*
-                  href="#" temporal: en la versión final apuntaría a
-                  /categorias/florales, /categorias/cremosas, etc.
-                  con rutas de Next.js como /app/categorias/[slug]/page.js
-                */}
-                <a href="#" aria-label={`Ver categoría ${cat.nombre}`}>
+                <Link href={`/categoria/${cat.id}`} aria-label={`Ver categoría ${cat.nombre}`}>
                   Ver categoría →
-                </a>
+                </Link>
               </div>
             </article>
           ))}
