@@ -8,12 +8,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useCart } from '@/context/CartContext'
+import AddToCartButton from './AddToCartButton'
 import styles from './ProductCard.module.css'
 
 export default function ProductCard({ producto }) {
-
-  const { agregarItem } = useCart()
 
   const precioFormateado = new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -52,13 +50,7 @@ export default function ProductCard({ producto }) {
             POR QUÉ: agregarItem actualiza el estado global, lo que
                      re-renderiza CartIcon automáticamente con el nuevo contador.
           */}
-          <button
-            className={styles.boton}
-            onClick={() => agregarItem(producto)}
-            aria-label={`Agregar ${producto.nombre} al carrito`}
-          >
-            Agregar
-          </button>
+          <AddToCartButton producto={producto} className={styles.boton} />
         </div>
       </div>
     </article>

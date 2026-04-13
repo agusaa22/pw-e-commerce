@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useCart } from '@/context/CartContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import products from '@/data/products'
+import AddToCartButton from '@/components/AddToCartButton'
 import styles from './categoria.module.css'
 
 const categorias = {
@@ -30,7 +30,6 @@ function tipoLabel(tipo) {
 }
 
 export default function CategoryDetail({ slug }) {
-  const { agregarItem } = useCart()
   const cat = categorias[slug]
 
   if (!cat) {
@@ -88,13 +87,7 @@ export default function CategoryDetail({ slug }) {
                   <p>{producto.descripcion}</p>
                   <div className={styles.footer}>
                     <span className={styles.precio}>{formatPrecio(producto.precio)}</span>
-                    <button
-                      className={styles.boton}
-                      onClick={() => agregarItem(producto)}
-                      aria-label={`Agregar ${producto.nombre} al carrito`}
-                    >
-                      Agregar
-                    </button>
+                    <AddToCartButton producto={producto} className={styles.boton} />
                   </div>
                 </div>
               </article>
