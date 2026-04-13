@@ -82,7 +82,7 @@ export default function FeaturedProducts() {
         // Importamos los datos del archivo local (simula el JSON de una API)
         const { default: datos } = await import('../data/products.js')
 
-        setProductos(datos)
+        setProductos(datos.filter(p => p.id <= 4))
 
       } catch (err) {
         /*
