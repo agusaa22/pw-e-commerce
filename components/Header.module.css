@@ -16,14 +16,14 @@
 
 .headerMain {
   background-color: var(--color-crema);
-  padding: 32px 0 24px;
+  padding: 12px 0 10px;
   border-bottom: 1px solid var(--color-borde);
 }
 
 /* ─── MARCA ──────────────────────────────────────────────────────────────── */
 .headerBrand {
   text-align: center;
-  margin-bottom: 26px;
+  margin-bottom: 8px;
 }
 
 /*
@@ -33,7 +33,7 @@
 */
 .brandName {
   font-family: var(--fuente-serif);
-  font-size: clamp(4rem, 10vw, 7rem);
+  font-size: clamp(2rem, 5vw, 3.2rem);
   line-height: 1;
   letter-spacing: 0.06em;
   font-weight: 600;
