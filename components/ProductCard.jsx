@@ -29,6 +29,13 @@ export default function ProductCard({ producto }) {
           alt={`Vela artesanal ${producto.nombre} — ${producto.categoria}`}
           className={styles.imagen}
         />
+        {producto.imagenHogar && (
+          <img
+            src={producto.imagenHogar}
+            alt={`${producto.nombre} en el hogar`}
+            className={styles.imagenHogar}
+          />
+        )}
       </Link>
 
       {/* ── INFORMACIÓN ─────────────────────────────────────────────────── */}

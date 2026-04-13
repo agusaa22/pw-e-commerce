@@ -9,6 +9,7 @@ const products = [
     descripcion: "Rosa empolvada, peonía blanca y un fondo suave de almizcle.",
     precio: 22500,
     imagen: "/prod-rose-velvet.png",
+    imagenHogar: "/prod-rose-velvet-hogar.png",
   },
   {
     id: 2,
@@ -19,6 +20,7 @@ const products = [
     descripcion: "Vainilla tostada, haba tonka y una salida cálida y envolvente.",
     precio: 24900,
     imagen: "/prod-creme-lumiere.png",
+    imagenHogar: "/prod-creme-lumiere-hogar.png",
   },
   {
     id: 3,
@@ -29,6 +31,7 @@ const products = [
     descripcion: "Lino limpio, pera blanca y notas frescas para todos los días.",
     precio: 21800,
     imagen: "/prod-blush-cotton.png",
+    imagenHogar: "/prod-blush-cotton-hogar.png",
   },
   {
     id: 4,
@@ -39,6 +42,7 @@ const products = [
     descripcion: "Ámbar suave, madera cálida y una estela elegante de noche.",
     precio: 27300,
     imagen: "/prod-golden-amber.png",
+    imagenHogar: "/prod-golden-amber-hogar.png",
   },
   {
     id: 5,
