@@ -35,9 +35,9 @@ export default function Header() {
 
             <nav className={styles.mainNav} aria-label="Navegación principal">
               <ul>
-                <li><Link href="/#categorias">CATEGORÍAS</Link></li>
-                <li><Link href="/#destacados">DESTACADOS</Link></li>
-                <li><Link href="/#footer">CONTACTO</Link></li>
+                <li><Link href="/#velas">VELAS</Link></li>
+                <li><Link href="/#aromatizantes">AROMATIZANTES</Link></li>
+                <li><Link href="/#sets">SETS</Link></li>
               </ul>
             </nav>
 
