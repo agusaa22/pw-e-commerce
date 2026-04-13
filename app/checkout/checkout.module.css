@@ -1,0 +1,355 @@
+/* Estilos de la página Checkout */
+
+.pagina {
+  padding: 48px 0 100px;
+  background-color: var(--color-crema);
+  min-height: 80vh;
+}
+
+/* ─── TÍTULO ─────────────────────────────────────────────────────────────── */
+.titulo {
+  font-family: var(--fuente-serif);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  color: var(--color-negro);
+  margin-bottom: 40px;
+}
+
+/* ─── LAYOUT: FORMULARIO + RESUMEN ──────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ─── FORMULARIO ─────────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ─── SECCIÓN / FIELDSET ─────────────────────────────────────────────────── */
+/*
+  <fieldset> agrupa campos relacionados semánticamente.
+  POR QUÉ: los lectores de pantalla anuncian el <legend>,
+  así el usuario sabe en qué sección está.
+*/
+.seccion {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  background: var(--color-blanco);
+  box-shadow: var(--shadow-soft);
+}
+
+.seccionTitulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--fuente-serif);
+  font-size: 1.2rem;
+  color: var(--color-negro);
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.seccionNum {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── FILAS DE CAMPOS ────────────────────────────────────────────────────── */
+.fila2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.fila3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ─── CAMPO INDIVIDUAL ───────────────────────────────────────────────────── */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.campo:last-child {
+  margin-bottom: 0;
+}
+
+.campo label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-negro);
+}
+
+.campo input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  color: var(--color-negro);
+  background: var(--color-crema);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.campo input::placeholder {
+  color: #bbb;
+}
+
+.campo input:focus {
+  border-color: var(--color-dorado);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+/* ─── NOTA DE PAGO ───────────────────────────────────────────────────────── */
+.pagoNota {
+  font-size: 0.85rem;
+  color: var(--color-texto-soft);
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 20px;
+}
+
+/* ─── BOTÓN CONFIRMAR ────────────────────────────────────────────────────── */
+.btnConfirmar {
+  width: 100%;
+  padding: 18px;
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.btnConfirmar:hover:not(:disabled) {
+  background-color: #333;
+}
+
+.btnConfirmar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── RESUMEN ────────────────────────────────────────────────────────────── */
+.resumen {
+  background: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  position: sticky;
+  top: 24px;
+}
+
+.resumenTitulo {
+  font-family: var(--fuente-serif);
+  font-size: 1.4rem;
+  color: var(--color-negro);
+  margin-bottom: 20px;
+}
+
+/* ─── LISTA DE ÍTEMS EN RESUMEN ──────────────────────────────────────────── */
+.resumenItems {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.resumenItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.resumenItemInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resumenItemImg {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.resumenItemNombre {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-negro);
+  margin: 0;
+}
+
+.resumenItemCant {
+  font-size: 0.8rem;
+  color: var(--color-texto-soft);
+  margin: 2px 0 0;
+}
+
+.resumenItemPrecio {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-negro);
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* ─── TOTALES ────────────────────────────────────────────────────────────── */
+.resumenLinea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: var(--color-texto-soft);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.resumenLinea:last-of-type {
+  border-bottom: none;
+}
+
+.resumenTotal {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-negro);
+  padding-top: 14px;
+}
+
+.envioGratis {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.btnEditarCarrito {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--color-dorado);
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.btnEditarCarrito:hover {
+  opacity: 0.7;
+}
+
+/* ─── PANTALLA VACÍO ─────────────────────────────────────────────────────── */
+.vacio {
+  text-align: center;
+  padding: 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  color: var(--color-texto-soft);
+}
+
+/* ─── PANTALLA DE ÉXITO ──────────────────────────────────────────────────── */
+.exitoWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.exitoCard {
+  background: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-md);
+  padding: 60px 48px;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.exitoIcon {
+  font-size: 3rem;
+  color: var(--color-dorado);
+}
+
+.exitoTitulo {
+  font-family: var(--fuente-serif);
+  font-size: 2rem;
+  color: var(--color-negro);
+}
+
+.exitoTexto {
+  color: var(--color-texto-soft);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.btnVolver {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 14px 32px;
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btnVolver:hover {
+  background-color: #333;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .resumen {
+    position: static;
+    order: -1; /* el resumen aparece arriba en mobile */
+  }
+}
+
+@media (max-width: 600px) {
+  .fila2,
+  .fila3 {
+    grid-template-columns: 1fr;
+  }
+}

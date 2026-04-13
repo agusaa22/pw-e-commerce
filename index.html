@@ -1,66 +1,215 @@
 <!DOCTYPE html>
+<!--
+  QUÉ HACE: Página de inicio de Aurevia en HTML puro + CSS.
+  POR QUÉ: El Módulo A del parcial evalúa HTML semántico. Este archivo muestra
+           el uso correcto de etiquetas semánticas y atributos ARIA.
+  NOTA: Esta es la versión HTML/CSS (Módulos A y B). La versión React/Next.js
+        está en la carpeta /app y /components.
+-->
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="Aurevia, tienda e-commerce de velas con diseño elegante y estética premium."
-  />
-  <title>Aurevia | Velas premium</title>
+  <meta name="description" content="Aurevia — Tienda de velas artesanales premium" />
+  <title>Aurevia | Velas Artesanales</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
-  <div class="topbar">
-    <p>Envío gratis regular en todos los productos</p>
-  </div>
-
-  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    HEADER
+    QUÉ: Navegación principal del sitio.
+    POR QUÉ: <header> es semántico. aria-label en <nav> diferencia esta
+             navegación de otras posibles en la página.
+    QUÉ PASARÍA SI SE SACA: Sin <nav> los lectores de pantalla no
+             ofrecerían la opción de "saltar a la navegación".
+  ══════════════════════════════════════════════════════════════════════════ -->
   <header class="site-header">
-    <div class="header-top container">
-      <a href="#" class="login-link" aria-label="Ir a iniciar sesión">
-        <span class="icon">◌</span>
-        <span>Iniciar sesión</span>
-      </a>
-    </div>
+    <div class="header-main">
+      <div class="container">
 
-    <div class="header-brand container">
-      <a href="#" class="brand" aria-label="Ir al inicio de Aurevia">
-        <h1>AUREVIA</h1>
-      </a>
-    </div>
+        <!-- MARCA -->
+        <div class="header-brand">
+          <a href="#" class="brand" aria-label="Ir al inicio de Aurevia">
+            <h1>AUREVIA</h1>
+          </a>
+        </div>
 
-    <div class="header-bottom container">
-      <nav class="main-nav" aria-label="Navegación principal">
-        <ul>
-          <li><a href="#categorias">AROMAS</a></li>
-          <li><a href="#destacados">COLECCIÓN</a></li>
-          <li><a href="#categorias">EDICIONES</a></li>
-          <li><a href="#footer">CONTACTO</a></li>
-        </ul>
-      </nav>
+        <!-- MENÚ + ICONOS -->
+        <div class="header-bottom">
+          <nav class="main-nav" aria-label="Navegación principal">
+            <ul>
 
-      <div class="header-actions" aria-label="Acciones del usuario">
-        <button class="icon-button" aria-label="Buscar">⌕</button>
-        <button class="icon-button" aria-label="Favoritos">♡</button>
-        <button class="icon-button" aria-label="Carrito">🛍</button>
+              <!-- ── VELAS ──────────────────────────────────────────────── -->
+              <li class="nav-item">
+                <a href="#destacados" class="nav-link">VELAS <span class="nav-arrow" aria-hidden="true">▾</span></a>
+                <div class="mega-menu" role="region" aria-label="Menú Velas">
+                  <p class="mega-menu-titulo">Velas artesanales · Cera de soja</p>
+                  <div class="mega-grid mega-grid--4">
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-rose-peony.png" alt="Vela Rose & Peony">
+                      <span class="mega-nombre">Rose & Peony</span>
+                      <span class="mega-sub">Floral · 180 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-jazmin.png" alt="Vela Delicado Jazmín">
+                      <span class="mega-nombre">Delicado Jazmín</span>
+                      <span class="mega-sub">Floral · 200 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-amber-vanilla.png" alt="Vela Amber Vanilla">
+                      <span class="mega-nombre">Amber Vanilla</span>
+                      <span class="mega-sub">Cremosa · 250 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-coco-especias.png" alt="Vela Coco & Especias">
+                      <span class="mega-nombre">Coco & Especias</span>
+                      <span class="mega-sub">Cremosa · 220 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-limon-lino.png" alt="Vela Limón & Lino Limpio">
+                      <span class="mega-nombre">Limón & Lino</span>
+                      <span class="mega-sub">Fresh · 220 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-citricos.png" alt="Vela Fresco de Cítricos">
+                      <span class="mega-nombre">Fresco de Cítricos</span>
+                      <span class="mega-sub">Fresh · 200 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-ambar-sandalo.png" alt="Vela Ámbar & Sándalo">
+                      <span class="mega-nombre">Ámbar & Sándalo</span>
+                      <span class="mega-sub">Luxury · 300 g</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/vela-ambar-exotico.png" alt="Vela Ámbar & Especias Exóticas">
+                      <span class="mega-nombre">Ámbar Exótico</span>
+                      <span class="mega-sub">Luxury · 280 g</span>
+                    </a>
+                  </div>
+                </div>
+              </li>
+
+              <!-- ── AROMATIZANTES ──────────────────────────────────────── -->
+              <li class="nav-item">
+                <a href="#" class="nav-link">AROMATIZANTES <span class="nav-arrow" aria-hidden="true">▾</span></a>
+                <div class="mega-menu" role="region" aria-label="Menú Aromatizantes">
+                  <p class="mega-menu-titulo">Difusores de varillas · 100 ml</p>
+                  <div class="mega-grid mega-grid--4">
+                    <a href="#" class="mega-product">
+                      <img src="public/arom-floral.png" alt="Aromatizante Floral">
+                      <span class="mega-nombre">Rose & Peony</span>
+                      <span class="mega-sub">Floral · 100 ml</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/arom-cremoso.png" alt="Aromatizante Cremoso">
+                      <span class="mega-nombre">Tonka & Vainilla</span>
+                      <span class="mega-sub">Cremosa · 100 ml</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/arom-fresh.png" alt="Aromatizante Fresh">
+                      <span class="mega-nombre">Eucalipto & Limón</span>
+                      <span class="mega-sub">Fresh · 100 ml</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/arom-luxury.png" alt="Aromatizante Luxury">
+                      <span class="mega-nombre">Ámbar & Sándalo</span>
+                      <span class="mega-sub">Luxury · 100 ml</span>
+                    </a>
+                  </div>
+                </div>
+              </li>
+
+              <!-- ── SETS ────────────────────────────────────────────────── -->
+              <li class="nav-item">
+                <a href="#" class="nav-link">SETS <span class="nav-arrow" aria-hidden="true">▾</span></a>
+                <div class="mega-menu" role="region" aria-label="Menú Sets">
+                  <p class="mega-menu-titulo">Sets de regalo · Vela + Difusor</p>
+                  <div class="mega-grid mega-grid--4">
+                    <a href="#" class="mega-product">
+                      <img src="public/set-floral.png" alt="Set Floral">
+                      <span class="mega-nombre">Set Floral</span>
+                      <span class="mega-sub">Vela + Difusor</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/set-cremoso.png" alt="Set Cremoso">
+                      <span class="mega-nombre">Set Cremoso</span>
+                      <span class="mega-sub">Vela + Difusor</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/set-fresh.png" alt="Set Fresh">
+                      <span class="mega-nombre">Set Fresh</span>
+                      <span class="mega-sub">Vela + Difusor</span>
+                    </a>
+                    <a href="#" class="mega-product">
+                      <img src="public/set-luxury.png" alt="Set Luxury">
+                      <span class="mega-nombre">Set Luxury</span>
+                      <span class="mega-sub">Vela + Difusor</span>
+                    </a>
+                  </div>
+                </div>
+              </li>
+
+            </ul>
+          </nav>
+
+          <div class="header-actions" aria-label="Acciones del usuario">
+            <!-- USUARIO: aria-hidden en SVG porque el aria-label del <a> lo describe -->
+            <a href="#" class="icon-link" aria-label="Mi cuenta">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"></path>
+              </svg>
+            </a>
+
+            <!-- FAVORITOS -->
+            <a href="#" class="icon-link" aria-label="Lista de favoritos">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21C12 21 4 16 4 9.5C4 6.5 6.2 4.5 8.8 4.5C10.5 4.5 11.6 5.3 12 6.2C12.4 5.3 13.5 4.5 15.2 4.5C17.8 4.5 20 6.5 20 9.5C20 16 12 21 12 21Z"></path>
+              </svg>
+            </a>
+
+            <!-- CARRITO -->
+            <a href="#" class="icon-link cart-link" aria-label="Carrito de compras, 0 ítems">
+              <div class="cart-icon-wrapper">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 7h10l1 12H6L7 7z"></path>
+                  <path d="M9 7V6a3 3 0 0 1 6 0v1"></path>
+                </svg>
+                <span class="cart-count" aria-hidden="true">0</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   </header>
 
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    MAIN — contenido principal de la página
+    QUÉ: <main> marca el bloque de contenido principal para lectores de pantalla.
+    POR QUÉ: Semántico. Permite "saltar al contenido" en lectores de pantalla.
+  ══════════════════════════════════════════════════════════════════════════ -->
   <main>
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-overlay"></div>
+
+    <!-- ─── HERO ─────────────────────────────────────────────────────────────
+      QUÉ: Sección de presentación de la marca con imagen de fondo.
+      POR QUÉ: <section> con aria-label identifica esta región para accesibilidad.
+      QUÉ PASARÍA SI SE SACA: El sitio arrancaría directo en categorías, sin contexto.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <section class="hero" aria-label="Presentación de Aurevia">
+      <div class="hero-overlay" aria-hidden="true"></div>
 
       <div class="hero-content container">
-        <p class="hero-kicker">Colección nueva</p>
-        <h2>Velas de luz, aroma y ritual</h2>
+        <p class="hero-kicker">✦ Colección nueva</p>
+
+        <!-- h2 porque h1 ya está en el header (el logo AUREVIA) -->
+        <h2>Velas de luz,<br>aroma y ritual</h2>
+
         <p class="hero-description">
-          Entrá en un universo de velas delicadas, diseño sofisticado y calidez contemporánea.
-          Una experiencia premium pensada para transformar cada ambiente.
+          Un universo de velas delicadas, diseño sofisticado y calidez contemporánea.
+          Cada pieza pensada para transformar tu ambiente.
         </p>
 
         <div class="hero-buttons">
@@ -70,159 +219,184 @@
       </div>
     </section>
 
-    <!-- CATEGORÍAS -->
-    <section class="categories-section container" id="categorias">
-      <div class="section-heading">
-        <span class="section-label">Categorías</span>
-        <h2>Elegí tu estilo de aroma</h2>
-        <p>
-          Esta sección ordena el catálogo desde el frontend estático y después
-          te va a servir para filtros con JavaScript, React o datos desde Supabase.
-        </p>
-      </div>
+    <!-- ─── CATEGORÍAS ───────────────────────────────────────────────────────
+      QUÉ: Grid de 4 categorías de productos.
+      POR QUÉ: <article> para cada card porque cada una es contenido independiente.
+               <section> con id permite navegación por ancla desde el menú.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <section class="categories-section" id="categorias" aria-labelledby="cat-titulo">
+      <div class="container">
+        <div class="section-heading">
+          <span class="section-label">Categorías</span>
+          <h2 id="cat-titulo">Elegí tu estilo de aroma</h2>
+          <p>Cada fragancia pensada para un momento, un ambiente y una emoción.</p>
+        </div>
 
-      <div class="categories-grid">
-        <article class="category-card">
-          <div class="category-visual category-rose"></div>
-          <h3>Florales</h3>
-          <p>Rosa, peonía, jazmín y perfumes suaves para espacios delicados.</p>
-          <a href="#">Ver categoría</a>
-        </article>
+        <!-- CSS Grid: repeat(4, 1fr) — ver styles.css .categories-grid -->
+        <div class="categories-grid">
 
-        <article class="category-card">
-          <div class="category-visual category-cream"></div>
-          <h3>Cremosas</h3>
-          <p>Vainilla, coco y acordes envolventes para un clima cálido y elegante.</p>
-          <a href="#">Ver categoría</a>
-        </article>
+          <article class="category-card">
+            <img src="public/cat-florales.png" alt="Categoría Florales — velas Aurevia" class="category-visual">
+            <div class="category-body">
+              <h3>Florales</h3>
+              <p>Rosa, peonía, jazmín y perfumes suaves para espacios delicados.</p>
+              <a href="#" aria-label="Ver categoría Florales">Ver categoría →</a>
+            </div>
+          </article>
 
-        <article class="category-card">
-          <div class="category-visual category-fresh"></div>
-          <h3>Fresh</h3>
-          <p>Cítricos, lino limpio y notas verdes para una sensación luminosa.</p>
-          <a href="#">Ver categoría</a>
-        </article>
+          <article class="category-card">
+            <img src="public/cat-cremosas.png" alt="Categoría Cremosas — velas Aurevia" class="category-visual">
+            <div class="category-body">
+              <h3>Cremosas</h3>
+              <p>Vainilla, coco y acordes envolventes para un clima cálido.</p>
+              <a href="#" aria-label="Ver categoría Cremosas">Ver categoría →</a>
+            </div>
+          </article>
 
-        <article class="category-card">
-          <div class="category-visual category-gold"></div>
-          <h3>Luxury</h3>
-          <p>Ámbar, sándalo y fragancias más intensas con acabado premium.</p>
-          <a href="#">Ver categoría</a>
-        </article>
+          <article class="category-card">
+            <img src="public/cat-fresh.png" alt="Categoría Fresh — velas Aurevia" class="category-visual">
+            <div class="category-body">
+              <h3>Fresh</h3>
+              <p>Cítricos, lino limpio y notas verdes para una sensación luminosa.</p>
+              <a href="#" aria-label="Ver categoría Fresh">Ver categoría →</a>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <img src="public/cat-luxury.png" alt="Categoría Luxury — velas Aurevia" class="category-visual">
+            <div class="category-body">
+              <h3>Luxury</h3>
+              <p>Ámbar, sándalo y fragancias intensas con acabado premium.</p>
+              <a href="#" aria-label="Ver categoría Luxury">Ver categoría →</a>
+            </div>
+          </article>
+
+        </div>
       </div>
     </section>
 
-    <!-- PRODUCTOS DESTACADOS -->
-    <section class="featured-section" id="destacados">
+    <!-- ─── PRODUCTOS DESTACADOS ─────────────────────────────────────────────
+      QUÉ: Grid de 4 productos con cards reutilizables.
+      POR QUÉ: En la versión React esto se poblaría con useState/useEffect/fetch.
+               Acá lo mostramos estático para demostrar el HTML semántico del Módulo A.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <section class="featured-section" id="destacados" aria-labelledby="dest-titulo">
       <div class="container">
         <div class="section-heading">
           <span class="section-label">Destacados</span>
-          <h2>Productos destacados</h2>
+          <h2 id="dest-titulo">Productos destacados</h2>
           <p>
-            Cada card de producto está pensada como base reutilizable.
-            Después la podés poblar con fetch, un array en JavaScript
-            o datos reales desde una base en Supabase.
+            Cada vela elaborada a mano con cera de soja natural
+            y fragancias premium importadas.
           </p>
         </div>
 
         <div class="products-grid">
+
           <article class="product-card">
-            <div class="product-image product-one"></div>
+            <img src="public/prod-rose-velvet.png" alt="Vela artesanal Rose Velvet — Floral" class="product-image">
             <div class="product-info">
-              <span class="product-type">Floral · 220 g</span>
+              <span class="product-type">Floral · 180 g</span>
               <h3>Rose Velvet</h3>
               <p>Rosa empolvada, peonía blanca y un fondo suave de almizcle.</p>
               <div class="product-footer">
                 <span class="price">$22.500</span>
-                <button class="product-btn">Agregar</button>
+                <button class="product-btn" aria-label="Agregar Rose Velvet al carrito">Agregar</button>
               </div>
             </div>
           </article>
 
           <article class="product-card">
-            <div class="product-image product-two"></div>
+            <img src="public/prod-creme-lumiere.png" alt="Vela artesanal Crème Lumière — Cremosa" class="product-image">
             <div class="product-info">
-              <span class="product-type">Cremosa · 250 g</span>
+              <span class="product-type">Cremosa · 220 g</span>
               <h3>Crème Lumière</h3>
-              <p>Vainilla tostada, haba tonka y una salida cálida y cremosa.</p>
+              <p>Vainilla tostada, haba tonka y una salida cálida y envolvente.</p>
               <div class="product-footer">
                 <span class="price">$24.900</span>
-                <button class="product-btn">Agregar</button>
+                <button class="product-btn" aria-label="Agregar Crème Lumière al carrito">Agregar</button>
               </div>
             </div>
           </article>
 
           <article class="product-card">
-            <div class="product-image product-three"></div>
+            <img src="public/prod-blush-cotton.png" alt="Vela artesanal Blush Cotton — Fresh" class="product-image">
             <div class="product-info">
               <span class="product-type">Fresh · 200 g</span>
               <h3>Blush Cotton</h3>
               <p>Lino limpio, pera blanca y notas frescas para todos los días.</p>
               <div class="product-footer">
                 <span class="price">$21.800</span>
-                <button class="product-btn">Agregar</button>
+                <button class="product-btn" aria-label="Agregar Blush Cotton al carrito">Agregar</button>
               </div>
             </div>
           </article>
 
           <article class="product-card">
-            <div class="product-image product-four"></div>
+            <img src="public/prod-golden-amber.png" alt="Vela artesanal Golden Amber — Luxury" class="product-image">
             <div class="product-info">
               <span class="product-type">Luxury · 300 g</span>
               <h3>Golden Amber</h3>
               <p>Ámbar suave, madera cálida y una estela elegante de noche.</p>
               <div class="product-footer">
                 <span class="price">$27.300</span>
-                <button class="product-btn">Agregar</button>
+                <button class="product-btn" aria-label="Agregar Golden Amber al carrito">Agregar</button>
               </div>
             </div>
           </article>
+
         </div>
       </div>
     </section>
+
   </main>
 
-  <!-- FOOTER -->
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    FOOTER
+    QUÉ: Pie de página con info de contacto y navegación secundaria.
+    POR QUÉ: <footer> es semántico. href="mailto:" y "tel:" mejoran la
+             usabilidad en dispositivos móviles.
+  ══════════════════════════════════════════════════════════════════════════ -->
   <footer class="site-footer" id="footer">
     <div class="container footer-grid">
-      <div>
-        <h3>AUREVIA</h3>
-        <p>
-          Tienda e-commerce de velas con una identidad elegante, cálida y premium,
-          desarrollada para Programación Web.
-        </p>
+
+      <div class="footer-brand">
+        <h2 class="footer-logo">AUREVIA</h2>
+        <p>Velas artesanales premium. Elaboradas a mano con cera de soja natural.</p>
+        <p class="footer-proyecto">Proyecto para Programación Web — ITBA 71.38</p>
       </div>
 
       <div>
-        <h4>Navegación</h4>
+        <h3>Tienda</h3>
         <ul>
-          <li><a href="#">Inicio</a></li>
           <li><a href="#categorias">Categorías</a></li>
           <li><a href="#destacados">Destacados</a></li>
+          <li><a href="#">Sets de regalo</a></li>
         </ul>
       </div>
 
       <div>
-        <h4>Ayuda</h4>
+        <h3>Ayuda</h3>
         <ul>
           <li><a href="#">Envíos</a></li>
-          <li><a href="#">Pagos</a></li>
+          <li><a href="#">Medios de pago</a></li>
           <li><a href="#">Preguntas frecuentes</a></li>
         </ul>
       </div>
 
       <div>
-        <h4>Contacto</h4>
+        <h3>Contacto</h3>
         <ul>
           <li><a href="mailto:hola@aurevia.com">hola@aurevia.com</a></li>
-          <li><a href="tel:+541100000000">+54 11 0000 0000</a></li>
+          <li><a href="tel:+541100000000">+54 11 0000-0000</a></li>
           <li>Buenos Aires, Argentina</li>
         </ul>
       </div>
+
     </div>
 
     <div class="footer-bottom container">
-      <p>© 2026 Aurevia. Todos los derechos reservados.</p>
+      <small>© 2026 Aurevia. Todos los derechos reservados.</small>
     </div>
   </footer>
 

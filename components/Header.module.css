@@ -1,0 +1,153 @@
+/*
+  QUÉ HACE: Estilos del componente Header usando CSS Modules.
+  POR QUÉ: CSS Modules genera nombres de clase únicos automáticamente,
+           evitando que los estilos de un componente afecten a otro.
+           Es la forma recomendada de estilar en Next.js.
+  QUÉ PASARÍA SI SE SACA: Los estilos globales podrían colisionar entre componentes.
+*/
+
+/* ─── ESTRUCTURA DEL HEADER ─────────────────────────────────────────────── */
+.siteHeader {
+  width: 100%;
+}
+
+.headerMain {
+  background-color: var(--color-crema);
+  padding: 32px 0 24px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* ─── MARCA ──────────────────────────────────────────────────────────────── */
+.headerBrand {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+/*
+  QUÉ HACE: El nombre de la marca con gradiente de color.
+  POR QUÉ: background-clip: text + color: transparent permite aplicar
+           un gradiente CSS como color de texto. Técnica moderna sin imágenes.
+*/
+.brandName {
+  font-family: var(--fuente-serif);
+  font-size: clamp(4rem, 10vw, 7rem);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--color-rosa), var(--color-rosa-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ─── FILA INFERIOR: nav + iconos ───────────────────────────────────────── */
+/*
+  QUÉ HACE: Usa Flexbox para poner el menú al centro y los iconos a la derecha.
+  POR QUÉ: Flexbox con position: relative en el padre y position: absolute
+           en el hijo (headerActions) es el patrón más limpio para centrar
+           un elemento cuando hay otro a un lado.
+*/
+.headerBottom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}
+
+/* ─── MENÚ ───────────────────────────────────────────────────────────────── */
+.mainNav ul {
+  display: flex;
+  gap: 56px;
+  list-style: none;
+}
+
+.mainNav a {
+  font-size: 0.88rem;
+  letter-spacing: 0.08em;
+  color: var(--color-texto);
+  transition: opacity 0.2s ease;
+}
+
+.mainNav a:hover {
+  opacity: 0.55;
+}
+
+/* ─── ICONOS ─────────────────────────────────────────────────────────────── */
+.headerActions {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.iconLink svg {
+  width: 26px;
+  height: 26px;
+  stroke: var(--color-negro);
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.2s ease, transform 0.2s ease;
+}
+
+.iconLink:hover svg {
+  stroke: var(--color-rosa-dark);
+  transform: scale(1.1);
+}
+
+/* ─── CARRITO ─────────────────────────────────────────────────────────────── */
+.cartWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.cartCount {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+/*
+  QUÉ HACE: En mobile apila el menú y los iconos en columna.
+  POR QUÉ: En pantallas pequeñas el layout horizontal no entra.
+           Media query con max-width es el enfoque "desktop-first".
+*/
+@media (max-width: 768px) {
+  .headerBottom {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .headerActions {
+    position: static;
+    justify-content: center;
+  }
+
+  .mainNav ul {
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

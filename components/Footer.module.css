@@ -1,0 +1,117 @@
+/*
+  Estilos del componente Footer.
+  QUÉ HACE: Layout de 4 columnas para la información del pie de página.
+  POR QUÉ: Grid con columnas desiguales (la primera es más ancha) da
+           jerarquía visual: la marca tiene más peso que los links.
+*/
+
+/* ─── FOOTER CONTAINER ────────────────────────────────────────────────────── */
+.siteFooter {
+  background-color: var(--color-crema-dark);
+  border-top: 1px solid var(--color-borde);
+  padding: 70px 0 28px;
+}
+
+/* ─── GRID: 4 COLUMNAS ───────────────────────────────────────────────────── */
+/*
+  1.4fr 1fr 1fr 1fr: la primera columna (marca) ocupa 40% más que las otras.
+  POR QUÉ: El texto de descripción de la marca necesita más espacio.
+*/
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 32px;
+  padding-bottom: 48px;
+}
+
+/* ─── COLUMNA DE MARCA ────────────────────────────────────────────────────── */
+.marcaCol p {
+  color: var(--color-texto-soft);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+
+.footerLogo {
+  font-family: var(--fuente-serif);
+  font-size: 2.2rem;
+  color: var(--color-rosa-dark);
+  margin-bottom: 14px;
+}
+
+.proyecto {
+  font-size: 0.82rem !important;
+  color: var(--color-dorado) !important;
+  font-style: italic;
+}
+
+/* ─── TÍTULOS DE COLUMNA ─────────────────────────────────────────────────── */
+.siteFooter h3,
+.footerGrid h3 {
+  font-family: var(--fuente-serif);
+  font-size: 1.1rem;
+  color: var(--color-negro);
+  margin-bottom: 16px;
+}
+
+/* ─── LINKS ──────────────────────────────────────────────────────────────── */
+.footerLinks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footerLinks li,
+.footerLinks a {
+  color: var(--color-texto-soft);
+  font-size: 0.92rem;
+  transition: color 0.2s ease;
+}
+
+.footerLinks a:hover {
+  color: var(--color-rosa-dark);
+}
+
+/* ─── PIE ────────────────────────────────────────────────────────────────── */
+.footerBottom {
+  border-top: 1px solid var(--color-borde);
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footerBottom small,
+.footerBottom a {
+  color: var(--color-texto-soft);
+  font-size: 0.88rem;
+}
+
+.footerBottom a:hover {
+  color: var(--color-rosa-dark);
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .footerGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .footerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footerBottom {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .siteFooter {
+    padding: 50px 0 24px;
+  }
+}

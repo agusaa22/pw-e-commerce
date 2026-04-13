@@ -1,0 +1,157 @@
+/*
+  QUÉ HACE: Define los estilos globales y las variables CSS de toda la app.
+  POR QUÉ: Centralizar colores y tamaños en variables evita repetirlos en cada componente.
+           Si el cliente pide cambiar el color principal, se cambia acá y se actualiza en todo el sitio.
+  QUÉ PASARÍA SI SE SACA: Los componentes perderían todos sus estilos base y las variables
+           dejarían de funcionar, rompiendo el diseño en toda la app.
+*/
+
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ─── VARIABLES DE DISEÑO ────────────────────────────────────────────────── */
+/*
+  POR QUÉ variables CSS: permiten reusar los valores de color/tipografía en todo el sitio.
+  Si mañana el cliente cambia el rosa, se modifica solo --color-rosa acá.
+*/
+:root {
+  /* Paleta Aurevia */
+  --color-rosa:       #f4c2c2;   /* rosa principal */
+  --color-rosa-dark:  #d98fa0;   /* rosa para hover/acentos */
+  --color-crema:      #fdf6ec;   /* fondo principal */
+  --color-crema-dark: #ece0d0;   /* fondo cards y footer */
+  --color-dorado:     #c9a84c;   /* dorado suave para labels */
+  --color-negro:      #1a1a1a;
+  --color-texto:      #2e2e2e;
+  --color-texto-soft: #7a6f68;
+  --color-blanco:     #ffffff;
+  --color-borde:      #e8ddd4;
+
+  /* Tipografía */
+  --fuente-serif: Georgia, "Times New Roman", serif;
+  --fuente-sans:  Arial, Helvetica, sans-serif;
+
+  /* Espaciado y efectos */
+  --radius-sm:    6px;
+  --radius-md:    12px;
+  --shadow-soft:  0 2px 16px rgba(180, 140, 120, 0.10);
+  --max-width:    1280px;
+}
+
+/* ─── BASE ───────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--fuente-sans);
+  background-color: var(--color-crema);
+  color: var(--color-texto);
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+/* ─── CONTENEDOR CENTRADO ────────────────────────────────────────────────── */
+/*
+  QUÉ HACE: Limita el ancho del contenido y lo centra.
+  POR QUÉ: min() con 92% garantiza márgenes laterales en mobile sin necesidad de media queries.
+*/
+.container {
+  width: min(92%, var(--max-width));
+  margin: 0 auto;
+}
+
+/* ─── ENCABEZADOS DE SECCIÓN ─────────────────────────────────────────────── */
+.section-label {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: var(--color-dorado);
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.section-heading {
+  max-width: 680px;
+  margin-bottom: 44px;
+}
+
+.section-heading h2 {
+  font-family: var(--fuente-serif);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.08;
+  margin-bottom: 14px;
+  color: var(--color-negro);
+}
+
+.section-heading p {
+  color: var(--color-texto-soft);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* ─── GRADIENTES DE IMÁGENES (simulan fotos de productos) ─────────────────── */
+/*
+  QUÉ HACE: Reemplaza imágenes reales con gradientes CSS.
+  POR QUÉ: Permite avanzar con el diseño sin necesitar assets reales.
+           En producción se cambiaría por next/image con URLs reales.
+*/
+.gradiente-rose {
+  background:
+    radial-gradient(circle at 50% 18%, #fffbe6 0 7%, transparent 8%),
+    linear-gradient(180deg, #f8d0de, #e4a8be);
+}
+.gradiente-cream {
+  background:
+    radial-gradient(circle at 50% 18%, #fffbe6 0 7%, transparent 8%),
+    linear-gradient(180deg, #faeede, #e5c49c);
+}
+.gradiente-fresh {
+  background:
+    radial-gradient(circle at 50% 18%, #fffbe6 0 7%, transparent 8%),
+    linear-gradient(180deg, #efe4ea, #ccc0ca);
+}
+.gradiente-gold {
+  background:
+    radial-gradient(circle at 50% 18%, #fff8d6 0 7%, transparent 8%),
+    linear-gradient(180deg, #f3e3c0, #d4aa72);
+}
+
+/* ─── RESPONSIVE BREAKPOINTS ─────────────────────────────────────────────── */
+/*
+  QUÉ HACE: Adapta el layout a distintos tamaños de pantalla.
+  POR QUÉ: Un e-commerce tiene alto tráfico mobile. Sin esto el diseño se rompería en celular.
+  QUÉ PASARÍA SI SE SACA: El sitio no sería usable en pantallas pequeñas.
+*/
+@media (max-width: 1100px) {
+  .categories-grid,
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .categories-grid,
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+}

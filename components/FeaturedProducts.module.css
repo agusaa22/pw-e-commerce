@@ -1,0 +1,85 @@
+/*
+  Estilos del componente FeaturedProducts.
+  QUÉ HACE: Define el fondo, grid y estados de loading/error de la sección destacados.
+*/
+
+/* ─── SECCIÓN ────────────────────────────────────────────────────────────── */
+.section {
+  padding: 90px 0;
+  /*
+    Fondo levemente más oscuro que el crema base para separar visualmente
+    esta sección de las categorías.
+  */
+  background-color: var(--color-crema-dark);
+}
+
+/* ─── GRID DE PRODUCTOS ──────────────────────────────────────────────────── */
+/*
+  Mismo patrón que Categories: 4 columnas con CSS Grid.
+  En el parcial podés comparar: acá usamos Grid (2D), en los botones del Hero
+  usamos Flexbox (1D). La regla es: Grid para el layout general, Flex para
+  alinear elementos dentro de un contenedor.
+*/
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+/* ─── ESTADOS: CARGANDO Y ERROR ──────────────────────────────────────────── */
+/*
+  QUÉ HACE: Centra el spinner o el mensaje de error en la sección.
+*/
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 280px;
+  color: var(--color-texto-soft);
+  font-size: 1rem;
+}
+
+/* ─── SPINNER DE CARGA ───────────────────────────────────────────────────── */
+/*
+  QUÉ HACE: Círculo animado que indica que se están cargando los datos.
+  POR QUÉ: La animación CSS (@keyframes) es más liviana que una GIF o JS.
+           border-top con color diferente crea el efecto de "arco giratorio".
+*/
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--color-borde);
+  border-top-color: var(--color-rosa-dark);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── ERROR ──────────────────────────────────────────────────────────────── */
+.errorMsg {
+  color: #c0392b;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 60px 0;
+  }
+}

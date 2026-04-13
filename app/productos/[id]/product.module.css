@@ -1,0 +1,316 @@
+/* Estilos de la página de detalle de producto */
+
+.pagina {
+  padding: 40px 0 90px;
+  background-color: var(--color-crema);
+  min-height: 80vh;
+}
+
+/* ─── BREADCRUMB ─────────────────────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--color-texto-soft);
+  margin-bottom: 36px;
+}
+
+.breadcrumb a {
+  color: var(--color-dorado);
+  transition: opacity 0.2s ease;
+}
+
+.breadcrumb a:hover { opacity: 0.7; }
+
+/* ─── GRID PRINCIPAL ─────────────────────────────────────────────────────── */
+/*
+  2 columnas: imagen (izquierda) + info (derecha).
+  POR QUÉ CSS Grid: controla las proporciones de las dos columnas
+  de forma más precisa que Flexbox.
+*/
+.productoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+  margin-bottom: 80px;
+}
+
+/* ─── IMAGEN ─────────────────────────────────────────────────────────────── */
+.imagenWrapper {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  position: sticky;
+  top: 24px; /* se queda fija mientras scrolleás la info */
+}
+
+.imagen {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+/* ─── INFO ───────────────────────────────────────────────────────────────── */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.categoria {
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  font-weight: 700;
+}
+
+.nombre {
+  font-family: var(--fuente-serif);
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  line-height: 1.1;
+  color: var(--color-negro);
+}
+
+.ratingResumen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.totalResenas {
+  font-size: 0.88rem;
+  color: var(--color-texto-soft);
+}
+
+.descripcion {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-texto-soft);
+  border-top: 1px solid var(--color-borde);
+  padding-top: 20px;
+}
+
+.precio {
+  font-family: var(--fuente-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-negro);
+}
+
+/* ─── SELECTOR DE CANTIDAD ───────────────────────────────────────────────── */
+.cantidadWrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cantidadLabel {
+  font-size: 0.9rem;
+  color: var(--color-texto-soft);
+}
+
+.cantidadControl {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cantidadBtn {
+  width: 40px;
+  height: 40px;
+  background: var(--color-crema-dark);
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--color-negro);
+  transition: background-color 0.15s ease;
+}
+
+.cantidadBtn:hover { background-color: var(--color-rosa); }
+
+.cantidadNum {
+  width: 48px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ─── BOTONES ────────────────────────────────────────────────────────────── */
+.botonAgregar {
+  width: 100%;
+  padding: 18px;
+  background-color: var(--color-negro);
+  color: var(--color-blanco);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+}
+
+.botonAgregar:hover { background-color: #333; }
+
+.botonAgregado {
+  background-color: var(--color-dorado) !important;
+}
+
+.irCarrito {
+  display: block;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-dorado);
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.irCarrito:hover { opacity: 0.7; }
+
+/* ─── DETALLES ───────────────────────────────────────────────────────────── */
+.detalles {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--color-borde);
+  padding-top: 20px;
+}
+
+.detalles li {
+  font-size: 0.9rem;
+  color: var(--color-texto-soft);
+}
+
+/* ─── ESTRELLAS ─────────────────────────────────────────────────────────── */
+.estrellas { display: inline-flex; gap: 2px; }
+
+.estrella      { color: var(--color-dorado); font-size: 1.1rem; }
+.estrellaVacia { color: #ddd;                font-size: 1.1rem; }
+
+/* ─── SECCIÓN DE RESEÑAS ─────────────────────────────────────────────────── */
+.resenasSeccion {
+  border-top: 1px solid var(--color-borde);
+  padding-top: 60px;
+}
+
+.resenasHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.resenasHeader h2 {
+  font-family: var(--fuente-serif);
+  font-size: 2rem;
+  color: var(--color-negro);
+}
+
+.ratingGlobal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--color-texto-soft);
+}
+
+/* Grid de 3 columnas para las reseñas */
+.resenasGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* ─── CARD DE RESEÑA ─────────────────────────────────────────────────────── */
+.resenaCard {
+  background: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.resenaHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+/* Avatar con iniciales */
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-rosa), var(--color-rosa-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.resenaNombre {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-negro);
+}
+
+.resenaFecha {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-texto-soft);
+  white-space: nowrap;
+}
+
+.resenaTexto {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--color-texto-soft);
+}
+
+/* ─── ERROR ──────────────────────────────────────────────────────────────── */
+.noEncontrado {
+  padding: 100px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  color: var(--color-texto-soft);
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .productoGrid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .imagenWrapper {
+    position: static;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .resenasGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .resenasGrid {
+    grid-template-columns: 1fr;
+  }
+}
