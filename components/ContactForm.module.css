@@ -1,0 +1,112 @@
+/* ── SECCIÓN CONTACTO ──────────────────────────────────────────────────── */
+.section {
+  padding: 5rem 0;
+  background: var(--clr-cream, #faf8f5);
+}
+
+/* ── FORMULARIO ───────────────────────────────────────────────────────── */
+.form {
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── CAMPO (label + input + error) ────────────────────────────────────── */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.campo label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--clr-text, #2c2c2c);
+}
+
+.campo input,
+.campo textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  outline: none;
+  border-color: var(--clr-accent, #b88b6e);
+  box-shadow: 0 0 0 3px rgba(184, 139, 110, 0.15);
+}
+
+/* Input con error */
+.campo input[aria-invalid="true"],
+.campo textarea[aria-invalid="true"] {
+  border-color: #e74c3c;
+}
+
+/* ── MENSAJE DE ERROR ─────────────────────────────────────────────────── */
+.error {
+  font-size: 0.8rem;
+  color: #e74c3c;
+}
+
+/* ── BOTÓN ENVIAR ─────────────────────────────────────────────────────── */
+.btnEnviar {
+  padding: 0.85rem 2rem;
+  background: var(--clr-accent, #b88b6e);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+
+.btnEnviar:hover {
+  background: var(--clr-accent-dark, #a07a5f);
+}
+
+.btnEnviar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── PANTALLA DE ÉXITO ────────────────────────────────────────────────── */
+.exito {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.exito h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.exito p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.btnVolver {
+  padding: 0.75rem 2rem;
+  background: var(--clr-accent, #b88b6e);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnVolver:hover {
+  background: var(--clr-accent-dark, #a07a5f);
+}

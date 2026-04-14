@@ -1,21 +1,39 @@
 /*
-  PÁGINA: Checkout
-  QUÉ HACE: Muestra el formulario de datos personales, dirección de envío
-           y pago simulado. Al enviar, muestra una pantalla de éxito.
-  POR QUÉ: "use client" porque usa useState para el formulario y useCart
-           para mostrar el resumen del pedido y vaciarlo al confirmar.
-  QUÉ PASARÍA SI SE SACA: No habría forma de completar la compra.
+  PÁGINA: Checkout (/checkout)
+  QUÉ HACE: Muestra el resumen del pedido y un formulario de pago.
+           El usuario completa sus datos, confirma la compra,
+           y el carrito se vacía.
+  POR QUÉ: "use client" es OBLIGATORIO porque usa hooks:
+           - useCart() (Context API) para leer los items y vaciar el carrito
+           - useState para manejar el formulario y los errores
+           - useRouter() para redirigir al home después de la compra
+  QUÉ PASARÍA SI SE SACA: No habría forma de finalizar la compra.
+
+  RUTA: En Next.js App Router, app/checkout/page.js
+        define automáticamente la ruta /checkout.
+
+  MÓDULO C — Este componente demuestra:
+    - Eventos en JavaScript (onChange, onSubmit)
+    - Validación de formularios con JavaScript
+    - Context API (useCart para leer y vaciar el carrito)
+    - Renderizado condicional (carrito vacío vs. formulario vs. éxito)
 */
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import styles from './checkout.module.css'
 
-/* ── HELPER: formatea precio en ARS ────────────────────────────────────────── */
+/*
+  HELPER: formatea un número como precio argentino.
+  24900 → "$24.900"
+  Intl.NumberFormat es una API nativa de JavaScript para formatear números
+  según la convención de cada país. 'es-AR' = español de Argentina.
+*/
 function formatPrecio(precio) {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -25,73 +43,144 @@ function formatPrecio(precio) {
 }
 
 export default function CheckoutPage() {
+  /*
+    useRouter() de Next.js nos da acceso a la navegación programática.
+    POR QUÉ: Después de confirmar la compra, redirigimos al home
+    sin que el usuario tenga que hacer click en un link.
+  */
+  const router = useRouter()
+
+  /*
+    Destructuramos del CartContext lo que necesitamos:
+    - items: array de productos en el carrito
+    - totalPrecio: suma total calculada en el Context
+    - vaciarCarrito: función que pone items en []
+  */
   const { items, totalPrecio, vaciarCarrito } = useCart()
 
   /*
-    useState para controlar si la compra fue confirmada.
-    Cuando confirmado es true, se muestra la pantalla de éxito.
-  */
-  const [confirmado, setConfirmado] = useState(false)
-  const [cargando, setCargando]     = useState(false)
-
-  /*
-    Estado del formulario: un objeto con todos los campos.
-    POR QUÉ un solo objeto: evita tener 8+ useState separados.
-    Cada campo del formulario actualiza su propiedad correspondiente.
+    Estado del formulario: un objeto con los 4 campos de pago.
+    POR QUÉ un solo objeto: misma lógica que en ContactForm.
+    Un handleChange genérico actualiza cualquier campo.
   */
   const [form, setForm] = useState({
-    nombre:    '',
-    apellido:  '',
-    email:     '',
-    telefono:  '',
+    nombre: '',
+    email: '',
     direccion: '',
-    ciudad:    '',
-    provincia: '',
-    cp:        '',
-    cardNum:   '',
-    cardNombre:'',
-    cardVenc:  '',
-    cardCvv:   '',
+    tarjeta: '',
   })
 
-  /* Actualiza solo el campo que cambió sin pisar los demás */
+  /*
+    Estado de errores: objeto donde cada key es un campo
+    y el valor es el mensaje de error.
+  */
+  const [errores, setErrores] = useState({})
+
+  /*
+    Estados del proceso de compra:
+    - procesando: true mientras se "procesa" el pago
+    - confirmado: true cuando la compra fue exitosa
+  */
+  const [procesando, setProcesando] = useState(false)
+  const [confirmado, setConfirmado] = useState(false)
+
+  /*
+    EVENTO: handleChange — igual que en ContactForm.
+    Se ejecuta cada vez que el usuario escribe en un campo.
+    [name]: value es "computed property name" de ES6.
+  */
   function handleChange(e) {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
+
+    // Limpia el error del campo cuando el usuario escribe
+    if (errores[name]) {
+      setErrores(prev => ({ ...prev, [name]: '' }))
+    }
   }
 
-  /* Simula el procesamiento del pago (no hay backend real aún) */
+  /*
+    VALIDACIÓN: revisa cada campo y devuelve un objeto con los errores.
+    .trim() quita espacios al inicio y final.
+  */
+  function validar() {
+    const nuevosErrores = {}
+
+    if (!form.nombre.trim()) {
+      nuevosErrores.nombre = 'El nombre es obligatorio'
+    }
+
+    if (!form.email.trim()) {
+      nuevosErrores.email = 'El email es obligatorio'
+    } else if (!form.email.includes('@') || !form.email.includes('.')) {
+      nuevosErrores.email = 'Ingresá un email válido'
+    }
+
+    if (!form.direccion.trim()) {
+      nuevosErrores.direccion = 'La dirección es obligatoria'
+    }
+
+    if (!form.tarjeta.trim()) {
+      nuevosErrores.tarjeta = 'El número de tarjeta es obligatorio'
+    } else if (form.tarjeta.replace(/\s/g, '').length < 16) {
+      nuevosErrores.tarjeta = 'Ingresá los 16 dígitos de la tarjeta'
+    }
+
+    return nuevosErrores
+  }
+
+  /*
+    EVENTO: handleSubmit — se ejecuta al confirmar la compra.
+    e.preventDefault() evita que el formulario recargue la página.
+    Valida los campos, simula el procesamiento del pago,
+    vacía el carrito y muestra la confirmación.
+  */
   function handleSubmit(e) {
     e.preventDefault()
-    setCargando(true)
+
+    // 1. Validar
+    const nuevosErrores = validar()
+
+    // 2. Si hay errores, mostrarlos y NO procesar
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores)
+      return
+    }
+
+    // 3. Simular procesamiento del pago
+    setProcesando(true)
+
     /*
-      setTimeout simula la demora de una API de pago real.
-      En producción esto sería un fetch a MercadoPago o Stripe.
+      setTimeout simula la demora de procesar un pago real.
+      En producción sería un fetch POST a una API de pagos.
     */
     setTimeout(() => {
-      setCargando(false)
+      setProcesando(false)
       setConfirmado(true)
-      vaciarCarrito()
-    }, 1800)
+      vaciarCarrito() // Limpia el carrito usando el Context
+    }, 2000)
   }
 
-  /* ── PANTALLA DE ÉXITO ──────────────────────────────────────────────────── */
+  /* ── COMPRA CONFIRMADA ───────────────────────────────────────────────────── */
+  /*
+    Renderizado condicional: si la compra fue confirmada,
+    mostramos un mensaje de éxito en lugar del formulario.
+  */
   if (confirmado) {
     return (
       <>
         <Header />
         <main className={styles.pagina}>
-          <div className={`container ${styles.exitoWrapper}`}>
-            <div className={styles.exitoCard}>
-              <span className={styles.exitoIcon} aria-hidden="true">✦</span>
-              <h1 className={styles.exitoTitulo}>¡Pedido confirmado!</h1>
-              <p className={styles.exitoTexto}>
-                Gracias por tu compra. Te enviaremos un correo con los detalles
-                de tu pedido y el seguimiento del envío.
-              </p>
-              <Link href="/" className={styles.btnVolver}>
-                Seguir comprando
-              </Link>
+          <div className="container">
+            <div className={styles.exito} role="alert">
+              <h1>¡Compra confirmada!</h1>
+              <p>Gracias por tu compra. Te enviamos un email con los detalles del pedido.</p>
+              <button
+                className={styles.btnVolver}
+                onClick={() => router.push('/')}
+              >
+                Volver al inicio
+              </button>
             </div>
           </div>
         </main>
@@ -100,17 +189,22 @@ export default function CheckoutPage() {
     )
   }
 
-  /* ── CARRITO VACÍO ──────────────────────────────────────────────────────── */
+  /* ── CARRITO VACÍO ───────────────────────────────────────────────────────── */
+  /*
+    Si el usuario llega a /checkout sin productos en el carrito,
+    mostramos un mensaje y un link para volver al catálogo.
+  */
   if (items.length === 0) {
     return (
       <>
         <Header />
         <main className={styles.pagina}>
           <div className="container">
+            <h1 className={styles.titulo}>Checkout</h1>
             <div className={styles.vacio}>
-              <p>Tu carrito está vacío.</p>
+              <p>Tu carrito está vacío. Agregá productos antes de comprar.</p>
               <Link href="/" className={styles.btnVolver}>
-                Explorar productos
+                Ver productos
               </Link>
             </div>
           </div>
@@ -120,7 +214,7 @@ export default function CheckoutPage() {
     )
   }
 
-  /* ── FORMULARIO DE CHECKOUT ─────────────────────────────────────────────── */
+  /* ── FORMULARIO DE CHECKOUT ──────────────────────────────────────────────── */
   return (
     <>
       <Header />
@@ -131,254 +225,150 @@ export default function CheckoutPage() {
 
           <div className={styles.layout}>
 
-            {/* ── FORMULARIO ──────────────────────────────────────────────── */}
-            <form onSubmit={handleSubmit} className={styles.form} noValidate>
+            {/* ── FORMULARIO DE PAGO ──────────────────────────────────── */}
+            {/*
+              <form> con onSubmit: al hacer click en "Confirmar compra"
+              o presionar Enter, se ejecuta handleSubmit.
+              noValidate: desactiva la validación nativa del navegador
+              para usar nuestra propia validación con JavaScript.
+            */}
+            <form onSubmit={handleSubmit} className={styles.formulario} noValidate>
+              <h2 className={styles.seccionTitulo}>Datos de envío</h2>
 
-              {/* ── DATOS PERSONALES ──────────────────────────────────────── */}
-              <fieldset className={styles.seccion}>
-                <legend className={styles.seccionTitulo}>
-                  <span className={styles.seccionNum}>1</span>
-                  Datos personales
-                </legend>
+              {/* ── CAMPO NOMBRE ─────────────────────────────────────── */}
+              <div className={styles.campo}>
+                <label htmlFor="ch-nombre">Nombre completo</label>
+                <input
+                  id="ch-nombre"
+                  name="nombre"
+                  type="text"
+                  placeholder="Tu nombre completo"
+                  value={form.nombre}
+                  onChange={handleChange}
+                  aria-invalid={errores.nombre ? 'true' : 'false'}
+                  aria-describedby={errores.nombre ? 'error-ch-nombre' : undefined}
+                />
+                {errores.nombre && (
+                  <span id="error-ch-nombre" className={styles.error} aria-live="polite">
+                    {errores.nombre}
+                  </span>
+                )}
+              </div>
 
-                <div className={styles.fila2}>
-                  <div className={styles.campo}>
-                    <label htmlFor="nombre">Nombre</label>
-                    <input
-                      id="nombre"
-                      name="nombre"
-                      type="text"
-                      required
-                      placeholder="María"
-                      value={form.nombre}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className={styles.campo}>
-                    <label htmlFor="apellido">Apellido</label>
-                    <input
-                      id="apellido"
-                      name="apellido"
-                      type="text"
-                      required
-                      placeholder="García"
-                      value={form.apellido}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
+              {/* ── CAMPO EMAIL ──────────────────────────────────────── */}
+              <div className={styles.campo}>
+                <label htmlFor="ch-email">Email</label>
+                <input
+                  id="ch-email"
+                  name="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  aria-invalid={errores.email ? 'true' : 'false'}
+                  aria-describedby={errores.email ? 'error-ch-email' : undefined}
+                />
+                {errores.email && (
+                  <span id="error-ch-email" className={styles.error} aria-live="polite">
+                    {errores.email}
+                  </span>
+                )}
+              </div>
 
-                <div className={styles.fila2}>
-                  <div className={styles.campo}>
-                    <label htmlFor="email">Email</label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      placeholder="maria@ejemplo.com"
-                      value={form.email}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className={styles.campo}>
-                    <label htmlFor="telefono">Teléfono</label>
-                    <input
-                      id="telefono"
-                      name="telefono"
-                      type="tel"
-                      placeholder="+54 11 1234-5678"
-                      value={form.telefono}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </fieldset>
+              {/* ── CAMPO DIRECCIÓN ──────────────────────────────────── */}
+              <div className={styles.campo}>
+                <label htmlFor="ch-direccion">Dirección de envío</label>
+                <input
+                  id="ch-direccion"
+                  name="direccion"
+                  type="text"
+                  placeholder="Calle, número, piso"
+                  value={form.direccion}
+                  onChange={handleChange}
+                  aria-invalid={errores.direccion ? 'true' : 'false'}
+                  aria-describedby={errores.direccion ? 'error-ch-direccion' : undefined}
+                />
+                {errores.direccion && (
+                  <span id="error-ch-direccion" className={styles.error} aria-live="polite">
+                    {errores.direccion}
+                  </span>
+                )}
+              </div>
 
-              {/* ── DIRECCIÓN DE ENVÍO ────────────────────────────────────── */}
-              <fieldset className={styles.seccion}>
-                <legend className={styles.seccionTitulo}>
-                  <span className={styles.seccionNum}>2</span>
-                  Dirección de envío
-                </legend>
+              {/* ── SEPARADOR DE SECCIÓN ─────────────────────────────── */}
+              <h2 className={styles.seccionTitulo}>Datos de pago</h2>
 
-                <div className={styles.campo}>
-                  <label htmlFor="direccion">Dirección</label>
-                  <input
-                    id="direccion"
-                    name="direccion"
-                    type="text"
-                    required
-                    placeholder="Av. Corrientes 1234, Piso 3"
-                    value={form.direccion}
-                    onChange={handleChange}
-                  />
-                </div>
+              {/* ── CAMPO TARJETA ────────────────────────────────────── */}
+              <div className={styles.campo}>
+                <label htmlFor="ch-tarjeta">Número de tarjeta</label>
+                <input
+                  id="ch-tarjeta"
+                  name="tarjeta"
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={form.tarjeta}
+                  onChange={handleChange}
+                  maxLength={19}
+                  aria-invalid={errores.tarjeta ? 'true' : 'false'}
+                  aria-describedby={errores.tarjeta ? 'error-ch-tarjeta' : undefined}
+                />
+                {errores.tarjeta && (
+                  <span id="error-ch-tarjeta" className={styles.error} aria-live="polite">
+                    {errores.tarjeta}
+                  </span>
+                )}
+              </div>
 
-                <div className={styles.fila3}>
-                  <div className={styles.campo}>
-                    <label htmlFor="ciudad">Ciudad</label>
-                    <input
-                      id="ciudad"
-                      name="ciudad"
-                      type="text"
-                      required
-                      placeholder="Buenos Aires"
-                      value={form.ciudad}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className={styles.campo}>
-                    <label htmlFor="provincia">Provincia</label>
-                    <input
-                      id="provincia"
-                      name="provincia"
-                      type="text"
-                      required
-                      placeholder="CABA"
-                      value={form.provincia}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className={styles.campo}>
-                    <label htmlFor="cp">Código postal</label>
-                    <input
-                      id="cp"
-                      name="cp"
-                      type="text"
-                      required
-                      placeholder="1043"
-                      value={form.cp}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* ── PAGO ─────────────────────────────────────────────────── */}
-              <fieldset className={styles.seccion}>
-                <legend className={styles.seccionTitulo}>
-                  <span className={styles.seccionNum}>3</span>
-                  Datos de pago
-                </legend>
-
-                <p className={styles.pagoNota}>
-                  🔒 Pago seguro simulado — no se procesará ningún cobro real.
-                </p>
-
-                <div className={styles.campo}>
-                  <label htmlFor="cardNum">Número de tarjeta</label>
-                  <input
-                    id="cardNum"
-                    name="cardNum"
-                    type="text"
-                    required
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                    value={form.cardNum}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className={styles.campo}>
-                  <label htmlFor="cardNombre">Nombre en la tarjeta</label>
-                  <input
-                    id="cardNombre"
-                    name="cardNombre"
-                    type="text"
-                    required
-                    placeholder="MARÍA GARCÍA"
-                    value={form.cardNombre}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className={styles.fila2}>
-                  <div className={styles.campo}>
-                    <label htmlFor="cardVenc">Vencimiento</label>
-                    <input
-                      id="cardVenc"
-                      name="cardVenc"
-                      type="text"
-                      required
-                      placeholder="MM/AA"
-                      maxLength={5}
-                      value={form.cardVenc}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className={styles.campo}>
-                    <label htmlFor="cardCvv">CVV</label>
-                    <input
-                      id="cardCvv"
-                      name="cardCvv"
-                      type="text"
-                      required
-                      placeholder="123"
-                      maxLength={4}
-                      value={form.cardCvv}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              {/* ── BOTÓN CONFIRMAR ───────────────────────────────────────── */}
+              {/* ── BOTÓN CONFIRMAR ──────────────────────────────────── */}
+              {/*
+                disabled={procesando} evita clicks duplicados mientras
+                se procesa el pago. El texto cambia dinámicamente.
+              */}
               <button
                 type="submit"
                 className={styles.btnConfirmar}
-                disabled={cargando}
-                aria-live="polite"
+                disabled={procesando}
               >
-                {cargando ? 'Procesando...' : `Confirmar compra · ${formatPrecio(totalPrecio)}`}
+                {procesando ? 'Procesando pago...' : 'Confirmar compra'}
               </button>
-
             </form>
 
-            {/* ── RESUMEN DEL PEDIDO ───────────────────────────────────────── */}
+            {/* ── RESUMEN DEL PEDIDO ──────────────────────────────────── */}
+            {/*
+              <aside> es semántico: indica contenido complementario.
+              Muestra los productos y el total antes de confirmar.
+            */}
             <aside className={styles.resumen} aria-label="Resumen del pedido">
               <h2 className={styles.resumenTitulo}>Tu pedido</h2>
 
               {/*
-                .map() muestra cada producto del carrito con su cantidad y subtotal.
-                key={item.id} identifica de forma única cada fila.
+                .map() recorre los items del carrito.
+                key={item.id} identifica cada elemento para React.
               */}
-              <ul className={styles.resumenItems}>
-                {items.map(item => (
-                  <li key={item.id} className={styles.resumenItem}>
-                    <div className={styles.resumenItemInfo}>
-                      <img
-                        src={item.imagen}
-                        alt={item.nombre}
-                        className={styles.resumenItemImg}
-                      />
-                      <div>
-                        <p className={styles.resumenItemNombre}>{item.nombre}</p>
-                        <p className={styles.resumenItemCant}>× {item.cantidad}</p>
-                      </div>
-                    </div>
-                    <p className={styles.resumenItemPrecio}>
-                      {formatPrecio(item.precio * item.cantidad)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              {items.map(item => (
+                <div key={item.id} className={styles.resumenItem}>
+                  <img
+                    src={item.imagen}
+                    alt={item.nombre}
+                    className={styles.resumenImagen}
+                  />
+                  <div className={styles.resumenItemInfo}>
+                    <span className={styles.resumenItemNombre}>{item.nombre}</span>
+                    <span className={styles.resumenItemCant}>Cant: {item.cantidad}</span>
+                  </div>
+                  <span className={styles.resumenItemPrecio}>
+                    {formatPrecio(item.precio * item.cantidad)}
+                  </span>
+                </div>
+              ))}
 
-              <div className={styles.resumenLinea}>
-                <span>Subtotal</span>
-                <span>{formatPrecio(totalPrecio)}</span>
-              </div>
-              <div className={styles.resumenLinea}>
-                <span>Envío</span>
-                <span className={styles.envioGratis}>Gratis</span>
-              </div>
-              <div className={`${styles.resumenLinea} ${styles.resumenTotal}`}>
+              <div className={styles.resumenTotal}>
                 <span>Total</span>
                 <span>{formatPrecio(totalPrecio)}</span>
               </div>
 
-              <Link href="/carrito" className={styles.btnEditarCarrito}>
-                ← Editar carrito
+              <Link href="/carrito" className={styles.linkCarrito}>
+                ← Volver al carrito
               </Link>
             </aside>
 

@@ -1,26 +1,54 @@
 <!DOCTYPE html>
 <!--
   QUÉ HACE: Página de inicio de Aurevia en HTML puro + CSS.
-  POR QUÉ: El Módulo A del parcial evalúa HTML semántico. Este archivo muestra
-           el uso correcto de etiquetas semánticas y atributos ARIA.
-  NOTA: Esta es la versión HTML/CSS (Módulos A y B). La versión React/Next.js
-        está en la carpeta /app y /components.
+  POR QUÉ: El Módulo B del parcial evalúa HTML semántico, accesibilidad
+           y CSS responsive. Este archivo demuestra esos conceptos.
+  NOTA: Esta es la versión HTML/CSS estática (Módulos A y B).
+        La versión React/Next.js interactiva está en /app y /components.
+        Ambas versiones conviven en el mismo proyecto.
 -->
 <html lang="es">
+<!--
+  lang="es" → ACCESIBILIDAD: le dice a los lectores de pantalla que
+  el contenido está en español. Sin esto, un lector de pantalla podría
+  intentar leer el texto en inglés, haciéndolo incomprensible.
+-->
 <head>
+  <!--
+    <meta charset="UTF-8"> → Define la codificación de caracteres.
+    Sin esto, los caracteres especiales (á, é, ñ) podrían verse mal.
+  -->
   <meta charset="UTF-8" />
+
+  <!--
+    viewport → RESPONSIVE: Le dice al navegador móvil que use el ancho
+    real del dispositivo en lugar de simular una pantalla de escritorio.
+    Sin esta línea, el sitio se vería diminuto en celulares.
+  -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    description → SEO: Los buscadores (Google) muestran este texto
+    como resumen en los resultados de búsqueda.
+  -->
   <meta name="description" content="Aurevia — Tienda de velas artesanales premium" />
+
   <title>Aurevia | Velas Artesanales</title>
+
+  <!--
+    Enlace a la hoja de estilos externa.
+    POR QUÉ externo y no inline: separar estructura (HTML) de estilos (CSS)
+    es una buena práctica. Permite cambiar el diseño sin tocar el HTML.
+  -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
-    HEADER
-    QUÉ: Navegación principal del sitio.
-    POR QUÉ: <header> es semántico. aria-label en <nav> diferencia esta
-             navegación de otras posibles en la página.
+    HEADER — Navegación principal del sitio
+    QUÉ: <header> es una etiqueta semántica de HTML5.
+    POR QUÉ: Le indica a lectores de pantalla y buscadores que este
+             bloque es la cabecera/navegación del sitio.
     QUÉ PASARÍA SI SE SACA: Sin <nav> los lectores de pantalla no
              ofrecerían la opción de "saltar a la navegación".
   ══════════════════════════════════════════════════════════════════════════ -->
@@ -28,133 +56,38 @@
     <div class="header-main">
       <div class="container">
 
-        <!-- MARCA -->
+        <!-- MARCA / LOGO -->
         <div class="header-brand">
+          <!--
+            aria-label="Ir al inicio": describe la acción del link
+            para lectores de pantalla. El usuario ciego escucha
+            "Ir al inicio de Aurevia" en lugar de solo "AUREVIA".
+          -->
           <a href="#" class="brand" aria-label="Ir al inicio de Aurevia">
             <h1>AUREVIA</h1>
           </a>
         </div>
 
-        <!-- MENÚ + ICONOS -->
+        <!-- MENÚ DE NAVEGACIÓN + ICONOS -->
         <div class="header-bottom">
+          <!--
+            <nav> es semántico: identifica un bloque de navegación.
+            aria-label diferencia este nav de otros (como el del footer).
+          -->
           <nav class="main-nav" aria-label="Navegación principal">
             <ul>
-
-              <!-- ── VELAS ──────────────────────────────────────────────── -->
-              <li class="nav-item">
-                <a href="#destacados" class="nav-link">VELAS <span class="nav-arrow" aria-hidden="true">▾</span></a>
-                <div class="mega-menu" role="region" aria-label="Menú Velas">
-                  <p class="mega-menu-titulo">Velas artesanales · Cera de soja</p>
-                  <div class="mega-grid mega-grid--4">
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-rose-peony.png" alt="Vela Rose & Peony">
-                      <span class="mega-nombre">Rose & Peony</span>
-                      <span class="mega-sub">Floral · 180 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-jazmin.png" alt="Vela Delicado Jazmín">
-                      <span class="mega-nombre">Delicado Jazmín</span>
-                      <span class="mega-sub">Floral · 200 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-amber-vanilla.png" alt="Vela Amber Vanilla">
-                      <span class="mega-nombre">Amber Vanilla</span>
-                      <span class="mega-sub">Cremosa · 250 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-coco-especias.png" alt="Vela Coco & Especias">
-                      <span class="mega-nombre">Coco & Especias</span>
-                      <span class="mega-sub">Cremosa · 220 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-limon-lino.png" alt="Vela Limón & Lino Limpio">
-                      <span class="mega-nombre">Limón & Lino</span>
-                      <span class="mega-sub">Fresh · 220 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-citricos.png" alt="Vela Fresco de Cítricos">
-                      <span class="mega-nombre">Fresco de Cítricos</span>
-                      <span class="mega-sub">Fresh · 200 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-ambar-sandalo.png" alt="Vela Ámbar & Sándalo">
-                      <span class="mega-nombre">Ámbar & Sándalo</span>
-                      <span class="mega-sub">Luxury · 300 g</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/vela-ambar-exotico.png" alt="Vela Ámbar & Especias Exóticas">
-                      <span class="mega-nombre">Ámbar Exótico</span>
-                      <span class="mega-sub">Luxury · 280 g</span>
-                    </a>
-                  </div>
-                </div>
-              </li>
-
-              <!-- ── AROMATIZANTES ──────────────────────────────────────── -->
-              <li class="nav-item">
-                <a href="#" class="nav-link">AROMATIZANTES <span class="nav-arrow" aria-hidden="true">▾</span></a>
-                <div class="mega-menu" role="region" aria-label="Menú Aromatizantes">
-                  <p class="mega-menu-titulo">Difusores de varillas · 100 ml</p>
-                  <div class="mega-grid mega-grid--4">
-                    <a href="#" class="mega-product">
-                      <img src="public/arom-floral.png" alt="Aromatizante Floral">
-                      <span class="mega-nombre">Rose & Peony</span>
-                      <span class="mega-sub">Floral · 100 ml</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/arom-cremoso.png" alt="Aromatizante Cremoso">
-                      <span class="mega-nombre">Tonka & Vainilla</span>
-                      <span class="mega-sub">Cremosa · 100 ml</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/arom-fresh.png" alt="Aromatizante Fresh">
-                      <span class="mega-nombre">Eucalipto & Limón</span>
-                      <span class="mega-sub">Fresh · 100 ml</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/arom-luxury.png" alt="Aromatizante Luxury">
-                      <span class="mega-nombre">Ámbar & Sándalo</span>
-                      <span class="mega-sub">Luxury · 100 ml</span>
-                    </a>
-                  </div>
-                </div>
-              </li>
-
-              <!-- ── SETS ────────────────────────────────────────────────── -->
-              <li class="nav-item">
-                <a href="#" class="nav-link">SETS <span class="nav-arrow" aria-hidden="true">▾</span></a>
-                <div class="mega-menu" role="region" aria-label="Menú Sets">
-                  <p class="mega-menu-titulo">Sets de regalo · Vela + Difusor</p>
-                  <div class="mega-grid mega-grid--4">
-                    <a href="#" class="mega-product">
-                      <img src="public/set-floral.png" alt="Set Floral">
-                      <span class="mega-nombre">Set Floral</span>
-                      <span class="mega-sub">Vela + Difusor</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/set-cremoso.png" alt="Set Cremoso">
-                      <span class="mega-nombre">Set Cremoso</span>
-                      <span class="mega-sub">Vela + Difusor</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/set-fresh.png" alt="Set Fresh">
-                      <span class="mega-nombre">Set Fresh</span>
-                      <span class="mega-sub">Vela + Difusor</span>
-                    </a>
-                    <a href="#" class="mega-product">
-                      <img src="public/set-luxury.png" alt="Set Luxury">
-                      <span class="mega-nombre">Set Luxury</span>
-                      <span class="mega-sub">Vela + Difusor</span>
-                    </a>
-                  </div>
-                </div>
-              </li>
-
+              <li><a href="#destacados" class="nav-link">VELAS</a></li>
+              <li><a href="#footer" class="nav-link">CONTACTO</a></li>
             </ul>
           </nav>
 
           <div class="header-actions" aria-label="Acciones del usuario">
-            <!-- USUARIO: aria-hidden en SVG porque el aria-label del <a> lo describe -->
+            <!--
+              ÍCONO USUARIO
+              aria-hidden="true" en el SVG: el ícono es decorativo.
+              El aria-label del <a> ya describe la acción,
+              así que el SVG no necesita ser leído por el lector de pantalla.
+            -->
             <a href="#" class="icon-link" aria-label="Mi cuenta">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="8" r="4"></circle>
@@ -162,14 +95,7 @@
               </svg>
             </a>
 
-            <!-- FAVORITOS -->
-            <a href="#" class="icon-link" aria-label="Lista de favoritos">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 21C12 21 4 16 4 9.5C4 6.5 6.2 4.5 8.8 4.5C10.5 4.5 11.6 5.3 12 6.2C12.4 5.3 13.5 4.5 15.2 4.5C17.8 4.5 20 6.5 20 9.5C20 16 12 21 12 21Z"></path>
-              </svg>
-            </a>
-
-            <!-- CARRITO -->
+            <!-- ÍCONO CARRITO -->
             <a href="#" class="icon-link cart-link" aria-label="Carrito de compras, 0 ítems">
               <div class="cart-icon-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -188,23 +114,33 @@
 
   <!-- ═══════════════════════════════════════════════════════════════════════
     MAIN — contenido principal de la página
-    QUÉ: <main> marca el bloque de contenido principal para lectores de pantalla.
-    POR QUÉ: Semántico. Permite "saltar al contenido" en lectores de pantalla.
+    QUÉ: <main> marca el bloque de contenido principal.
+    POR QUÉ: Semántico. Los lectores de pantalla ofrecen un atajo para
+             "saltar al contenido principal", lo que mejora la accesibilidad.
+    Solo debe haber UN <main> por página.
   ══════════════════════════════════════════════════════════════════════════ -->
   <main>
 
     <!-- ─── HERO ─────────────────────────────────────────────────────────────
       QUÉ: Sección de presentación de la marca con imagen de fondo.
       POR QUÉ: <section> con aria-label identifica esta región para accesibilidad.
-      QUÉ PASARÍA SI SE SACA: El sitio arrancaría directo en categorías, sin contexto.
+      QUÉ PASARÍA SI SE SACA: El sitio arrancaría directo en productos, sin contexto.
     ──────────────────────────────────────────────────────────────────────── -->
     <section class="hero" aria-label="Presentación de Aurevia">
+      <!--
+        Overlay oscuro semitransparente sobre la imagen de fondo.
+        aria-hidden="true": es puramente visual, no tiene contenido.
+      -->
       <div class="hero-overlay" aria-hidden="true"></div>
 
       <div class="hero-content container">
-        <p class="hero-kicker">✦ Colección nueva</p>
+        <p class="hero-kicker">Colección nueva</p>
 
-        <!-- h2 porque h1 ya está en el header (el logo AUREVIA) -->
+        <!--
+          <h2> y no <h1> porque el h1 ya está en el header (AUREVIA).
+          La jerarquía correcta es: h1 → h2 → h3.
+          Romperla confunde a los lectores de pantalla.
+        -->
         <h2>Velas de luz,<br>aroma y ritual</h2>
 
         <p class="hero-description">
@@ -212,79 +148,35 @@
           Cada pieza pensada para transformar tu ambiente.
         </p>
 
+        <!--
+          Botones con href="#destacados": navegación por ancla.
+          Al hacer click, el navegador scrollea hasta el elemento
+          con id="destacados" — no recarga la página.
+        -->
         <div class="hero-buttons">
           <a href="#destacados" class="btn btn-primary">Compra ahora</a>
-          <a href="#categorias" class="btn btn-secondary">Descubrí más</a>
+          <a href="#destacados" class="btn btn-secondary">Descubrí más</a>
         </div>
       </div>
     </section>
 
-    <!-- ─── CATEGORÍAS ───────────────────────────────────────────────────────
-      QUÉ: Grid de 4 categorías de productos.
-      POR QUÉ: <article> para cada card porque cada una es contenido independiente.
-               <section> con id permite navegación por ancla desde el menú.
-    ──────────────────────────────────────────────────────────────────────── -->
-    <section class="categories-section" id="categorias" aria-labelledby="cat-titulo">
-      <div class="container">
-        <div class="section-heading">
-          <span class="section-label">Categorías</span>
-          <h2 id="cat-titulo">Elegí tu estilo de aroma</h2>
-          <p>Cada fragancia pensada para un momento, un ambiente y una emoción.</p>
-        </div>
-
-        <!-- CSS Grid: repeat(4, 1fr) — ver styles.css .categories-grid -->
-        <div class="categories-grid">
-
-          <article class="category-card">
-            <img src="public/cat-florales.png" alt="Categoría Florales — velas Aurevia" class="category-visual">
-            <div class="category-body">
-              <h3>Florales</h3>
-              <p>Rosa, peonía, jazmín y perfumes suaves para espacios delicados.</p>
-              <a href="#" aria-label="Ver categoría Florales">Ver categoría →</a>
-            </div>
-          </article>
-
-          <article class="category-card">
-            <img src="public/cat-cremosas.png" alt="Categoría Cremosas — velas Aurevia" class="category-visual">
-            <div class="category-body">
-              <h3>Cremosas</h3>
-              <p>Vainilla, coco y acordes envolventes para un clima cálido.</p>
-              <a href="#" aria-label="Ver categoría Cremosas">Ver categoría →</a>
-            </div>
-          </article>
-
-          <article class="category-card">
-            <img src="public/cat-fresh.png" alt="Categoría Fresh — velas Aurevia" class="category-visual">
-            <div class="category-body">
-              <h3>Fresh</h3>
-              <p>Cítricos, lino limpio y notas verdes para una sensación luminosa.</p>
-              <a href="#" aria-label="Ver categoría Fresh">Ver categoría →</a>
-            </div>
-          </article>
-
-          <article class="category-card">
-            <img src="public/cat-luxury.png" alt="Categoría Luxury — velas Aurevia" class="category-visual">
-            <div class="category-body">
-              <h3>Luxury</h3>
-              <p>Ámbar, sándalo y fragancias intensas con acabado premium.</p>
-              <a href="#" aria-label="Ver categoría Luxury">Ver categoría →</a>
-            </div>
-          </article>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── PRODUCTOS DESTACADOS ─────────────────────────────────────────────
-      QUÉ: Grid de 4 productos con cards reutilizables.
-      POR QUÉ: En la versión React esto se poblaría con useState/useEffect/fetch.
-               Acá lo mostramos estático para demostrar el HTML semántico del Módulo A.
+    <!-- ─── PRODUCTOS ────────────────────────────────────────────────────────
+      QUÉ: Grid de las 4 velas artesanales de Aurevia.
+      POR QUÉ: En la versión React esto se carga con useState/useEffect/fetch.
+               Acá lo mostramos estático para demostrar HTML semántico (Módulo B).
+      CSS: .products-grid usa CSS Grid con repeat(4, 1fr) en desktop
+           y cambia a 1-2 columnas en mobile con @media query (responsive).
     ──────────────────────────────────────────────────────────────────────── -->
     <section class="featured-section" id="destacados" aria-labelledby="dest-titulo">
       <div class="container">
         <div class="section-heading">
-          <span class="section-label">Destacados</span>
-          <h2 id="dest-titulo">Productos destacados</h2>
+          <span class="section-label">Nuestras velas</span>
+          <!--
+            id="dest-titulo" enlazado con aria-labelledby del <section>.
+            Esto le dice al lector de pantalla: "esta sección se llama
+            Colección Aurevia".
+          -->
+          <h2 id="dest-titulo">Colección Aurevia</h2>
           <p>
             Cada vela elaborada a mano con cera de soja natural
             y fragancias premium importadas.
@@ -293,6 +185,14 @@
 
         <div class="products-grid">
 
+          <!--
+            Cada product-card es un <article> con:
+            - <img> con alt descriptivo → OBLIGATORIO para accesibilidad
+            - <h3> para el nombre → jerarquía semántica: h2 → h3
+            - <button> con aria-label → describe la acción para lectores de pantalla
+            Esto es la versión HTML estática de lo que React hace dinámicamente
+            con .map() en el componente FeaturedProducts.
+          -->
           <article class="product-card">
             <img src="public/prod-rose-velvet.png" alt="Vela artesanal Rose Velvet — Floral" class="product-image">
             <div class="product-info">
@@ -349,13 +249,97 @@
       </div>
     </section>
 
+    <!-- ─── FORMULARIO DE CONTACTO ───────────────────────────────────────────
+      QUÉ: Formulario para que el usuario envíe una consulta.
+      POR QUÉ: Demuestra HTML semántico de formularios:
+               - <form> agrupa los campos
+               - <label> enlazado con <input> vía for/id (accesibilidad)
+               - required marca campos obligatorios
+               - type="email" activa validación nativa del navegador
+      En la versión React, la validación se hace con JavaScript (useState).
+      Acá usamos validación nativa de HTML5.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <section class="contact-section" id="contacto" aria-labelledby="contacto-titulo">
+      <div class="container">
+        <div class="section-heading">
+          <span class="section-label">Contacto</span>
+          <h2 id="contacto-titulo">¿Tenés alguna consulta?</h2>
+          <p>Escribinos y te respondemos a la brevedad.</p>
+        </div>
+
+        <!--
+          <form>: agrupa campos de entrada.
+          action="#" → en producción sería la URL del backend.
+          method="post" → envía los datos de forma segura (no en la URL).
+        -->
+        <form class="contact-form" action="#" method="post">
+
+          <!--
+            <label for="nombre"> enlaza con <input id="nombre">.
+            POR QUÉ: Accesibilidad. Al clickear "Nombre", el cursor
+            va al input. Los lectores de pantalla leen el label.
+          -->
+          <div class="form-field">
+            <label for="nombre">Nombre</label>
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              placeholder="Tu nombre"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="email">Email</label>
+            <!--
+              type="email" → el navegador valida automáticamente
+              que tenga formato de email (con @). Sin JavaScript.
+              required → no permite enviar si está vacío.
+            -->
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="tu@email.com"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="mensaje">Mensaje</label>
+            <!--
+              <textarea> permite texto de varias líneas.
+              rows="4" → altura visible inicial de 4 líneas.
+            -->
+            <textarea
+              id="mensaje"
+              name="mensaje"
+              rows="4"
+              placeholder="¿En qué podemos ayudarte?"
+              required
+            ></textarea>
+          </div>
+
+          <!--
+            type="submit" → al clickear, el navegador ejecuta
+            la validación de los campos required y type="email".
+            Si todo está bien, envía el formulario.
+          -->
+          <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+
+        </form>
+      </div>
+    </section>
+
   </main>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
-    FOOTER
-    QUÉ: Pie de página con info de contacto y navegación secundaria.
-    POR QUÉ: <footer> es semántico. href="mailto:" y "tel:" mejoran la
-             usabilidad en dispositivos móviles.
+    FOOTER — Pie de página
+    QUÉ: <footer> es semántico: indica información de pie de página.
+    POR QUÉ: href="mailto:" y "tel:" son atributos semánticos de HTML
+             que abren el cliente de correo/teléfono del dispositivo.
+             Mejoran la usabilidad especialmente en mobile.
   ══════════════════════════════════════════════════════════════════════════ -->
   <footer class="site-footer" id="footer">
     <div class="container footer-grid">
@@ -369,9 +353,7 @@
       <div>
         <h3>Tienda</h3>
         <ul>
-          <li><a href="#categorias">Categorías</a></li>
-          <li><a href="#destacados">Destacados</a></li>
-          <li><a href="#">Sets de regalo</a></li>
+          <li><a href="#destacados">Nuestras velas</a></li>
         </ul>
       </div>
 
@@ -387,6 +369,11 @@
       <div>
         <h3>Contacto</h3>
         <ul>
+          <!--
+            href="mailto:" → abre el cliente de email del usuario.
+            href="tel:" → inicia una llamada en dispositivos móviles.
+            Son protocolos estándar de HTML, no requieren JavaScript.
+          -->
           <li><a href="mailto:hola@aurevia.com">hola@aurevia.com</a></li>
           <li><a href="tel:+541100000000">+54 11 0000-0000</a></li>
           <li>Buenos Aires, Argentina</li>
@@ -396,6 +383,10 @@
     </div>
 
     <div class="footer-bottom container">
+      <!--
+        <small> es semántico: indica texto de menor importancia
+        como copyright y avisos legales.
+      -->
       <small>© 2026 Aurevia. Todos los derechos reservados.</small>
     </div>
   </footer>

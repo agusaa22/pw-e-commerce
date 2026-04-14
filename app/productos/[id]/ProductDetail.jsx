@@ -1,9 +1,16 @@
 /*
   COMPONENTE: ProductDetail
-  QUÉ HACE: Página de detalle del producto con imagen grande, info,
-           selector de cantidad, botón de carrito y sección de reseñas.
-  POR QUÉ: "use client" porque usa useState (cantidad) y useCart (carrito).
+  QUÉ HACE: Muestra la página de detalle de un producto individual con
+           imagen grande, información, selector de cantidad y botón de carrito.
+  POR QUÉ: "use client" es OBLIGATORIO porque usa:
+           - useState → para manejar la cantidad seleccionada y el feedback visual
+           - useCart() → para agregar productos al carrito (Context API)
+           Ambos son hooks de React que solo funcionan en el navegador.
   QUÉ PASARÍA SI SE SACA: No habría página de detalle para ningún producto.
+           Al hacer click en una ProductCard, el usuario vería un 404.
+
+  RUTA: /productos/[id] → Next.js pasa el id desde la URL como prop.
+        Ejemplo: /productos/3 → id = "3"
 */
 'use client'
 
@@ -13,51 +20,38 @@ import { useCart } from '@/context/CartContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import products from '@/data/products'
-import reviews from '@/data/reviews'
 import styles from './product.module.css'
 
-/* ── HELPER: renderiza estrellas ★ ────────────────────────────────────────── */
-function Estrellas({ cantidad, max = 5 }) {
-  return (
-    <span className={styles.estrellas} aria-label={`${cantidad} de ${max} estrellas`}>
-      {Array.from({ length: max }, (_, i) => (
-        <span key={i} className={i < cantidad ? styles.estrella : styles.estrellaVacia}>
-          ★
-        </span>
-      ))}
-    </span>
-  )
-}
-
-/* ── HELPER: avatar con iniciales ──────────────────────────────────────────── */
-function Avatar({ nombre }) {
-  const iniciales = nombre
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-  return <div className={styles.avatar} aria-hidden="true">{iniciales}</div>
-}
-
-/* ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────── */
 export default function ProductDetail({ id }) {
 
+  /*
+    useCart() accede al estado global del carrito (definido en CartContext).
+    Destructuramos solo agregarItem porque es lo único que necesitamos acá.
+    POR QUÉ: Cuando llamamos a agregarItem(), el CartContext actualiza
+             su estado, lo que re-renderiza automáticamente el CartIcon
+             en el Header con el nuevo contador.
+  */
   const { agregarItem } = useCart()
 
   /*
     useState(1): la cantidad empieza en 1.
-    POR QUÉ useState: cuando el usuario cambia la cantidad con + o -,
-    React re-renderiza solo el selector, no toda la página.
+    POR QUÉ useState y no una variable normal:
+      - let cantidad = 1 → React NO detecta cambios, la pantalla no se actualiza.
+      - useState(1) → React SÍ detecta el cambio y re-renderiza el componente.
+
+    useState(false): controla el feedback visual "✓ Agregado".
   */
   const [cantidad, setCantidad] = useState(1)
-  const [agregado, setAgregado]  = useState(false)
+  const [agregado, setAgregado] = useState(false)
 
-  /* Busca el producto en el array por id (params viene como string, parseInt lo convierte) */
+  /*
+    Busca el producto en el array por id.
+    parseInt(id) convierte el string "3" a número 3,
+    porque params de Next.js siempre llegan como string.
+  */
   const producto = products.find(p => p.id === parseInt(id))
-  const resenas  = reviews[parseInt(id)] || []
 
-  /* Si el id no existe, muestra mensaje de error */
+  /* Si el id no existe en el array, muestra un mensaje de error */
   if (!producto) {
     return (
       <div className={styles.noEncontrado}>
@@ -67,17 +61,26 @@ export default function ProductDetail({ id }) {
     )
   }
 
+  /*
+    Intl.NumberFormat formatea el precio con formato argentino.
+    22500 → "$22.500"
+    POR QUÉ: Mejor legibilidad para el usuario. Es una API nativa
+             de JavaScript (no necesita librerías externas).
+  */
   const precioFormateado = new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
     maximumFractionDigits: 0,
   }).format(producto.precio)
 
-  const promedioEstrellas = resenas.length
-    ? Math.round(resenas.reduce((acc, r) => acc + r.estrellas, 0) / resenas.length)
-    : 0
-
-  /* Agrega al carrito con la cantidad seleccionada */
+  /*
+    EVENTO: función que se ejecuta cuando el usuario hace click en "Agregar".
+    POR QUÉ es una función y no código directo en el onClick:
+      - Necesitamos ejecutar varias acciones: agregar al carrito,
+        mostrar feedback, y ocultarlo después de 2 segundos.
+    setTimeout: ejecuta una función después de X milisegundos.
+                Es asincronía básica (no bloquea el hilo principal).
+  */
   function handleAgregar() {
     agregarItem(producto, cantidad)
     setAgregado(true)
@@ -91,6 +94,10 @@ export default function ProductDetail({ id }) {
         <div className="container">
 
           {/* ── BREADCRUMB ──────────────────────────────────────────────── */}
+          {/*
+            Navegación secundaria que muestra la ruta: Inicio / Nombre.
+            aria-label="Ruta de navegación" → accesibilidad para lectores de pantalla.
+          */}
           <nav className={styles.breadcrumb} aria-label="Ruta de navegación">
             <Link href="/">Inicio</Link>
             <span aria-hidden="true"> / </span>
@@ -98,9 +105,14 @@ export default function ProductDetail({ id }) {
           </nav>
 
           {/* ── SECCIÓN PRINCIPAL: imagen + info ────────────────────────── */}
+          {/*
+            CSS Grid divide esta sección en 2 columnas:
+            imagen a la izquierda, información a la derecha.
+            En mobile (responsive) se apilan en una sola columna.
+          */}
           <div className={styles.productoGrid}>
 
-            {/* Imagen grande */}
+            {/* Imagen grande del producto */}
             <div className={styles.imagenWrapper}>
               <img
                 src={producto.imagen}
@@ -116,15 +128,11 @@ export default function ProductDetail({ id }) {
                 {producto.categoria} · {producto.peso}
               </span>
 
+              {/*
+                <h1> porque es el título principal de esta página.
+                Cada página tiene un solo h1.
+              */}
               <h1 className={styles.nombre}>{producto.nombre}</h1>
-
-              {/* Rating resumido */}
-              <div className={styles.ratingResumen}>
-                <Estrellas cantidad={promedioEstrellas} />
-                <span className={styles.totalResenas}>
-                  ({resenas.length} reseñas)
-                </span>
-              </div>
 
               <p className={styles.descripcion}>{producto.descripcion}</p>
 
@@ -132,9 +140,9 @@ export default function ProductDetail({ id }) {
 
               {/* ── SELECTOR DE CANTIDAD ─────────────────────────────── */}
               {/*
-                POR QUÉ useState para cantidad: cada click en + o -
-                actualiza el estado y React re-renderiza el número
-                sin recargar la página.
+                Dos botones (− y +) que modifican el estado "cantidad".
+                Cada click llama a setCantidad, React re-renderiza el número.
+                Math.max(1, c - 1) evita que la cantidad baje de 1.
               */}
               <div className={styles.cantidadWrapper}>
                 <span className={styles.cantidadLabel}>Cantidad</span>
@@ -159,7 +167,13 @@ export default function ProductDetail({ id }) {
                 </div>
               </div>
 
-              {/* ── BOTÓN AGREGAR ────────────────────────────────────── */}
+              {/* ── BOTÓN AGREGAR AL CARRITO ─────────────────────────── */}
+              {/*
+                onClick={handleAgregar} → evento de JavaScript.
+                Cuando el usuario hace click, se ejecuta handleAgregar().
+                aria-live="polite" → el lector de pantalla anuncia el cambio
+                de texto ("Agregar" → "✓ Agregado") sin interrumpir al usuario.
+              */}
               <button
                 className={`${styles.botonAgregar} ${agregado ? styles.botonAgregado : ''}`}
                 onClick={handleAgregar}
@@ -172,47 +186,15 @@ export default function ProductDetail({ id }) {
                 Ver carrito →
               </Link>
 
-              {/* Info extra */}
+              {/* Info extra sobre el producto */}
               <ul className={styles.detalles}>
-                <li>✦ Cera de soja 100% natural</li>
-                <li>✦ Elaborada artesanalmente</li>
-                <li>✦ Envío en 48–72 hs hábiles</li>
+                <li>Cera de soja 100% natural</li>
+                <li>Elaborada artesanalmente</li>
+                <li>Envío en 48–72 hs hábiles</li>
               </ul>
 
             </div>
           </div>
-
-          {/* ── SECCIÓN DE RESEÑAS ──────────────────────────────────────── */}
-          <section className={styles.resenasSeccion} aria-labelledby="resenas-titulo">
-            <div className={styles.resenasHeader}>
-              <h2 id="resenas-titulo">Reseñas de clientes</h2>
-              <div className={styles.ratingGlobal}>
-                <Estrellas cantidad={promedioEstrellas} />
-                <span>{promedioEstrellas}.0 de 5 · {resenas.length} reseñas</span>
-              </div>
-            </div>
-
-            {/*
-              .map() genera una card por cada reseña del array.
-              key={resena.id} es obligatorio para que React identifique
-              cada elemento de la lista de forma única.
-            */}
-            <div className={styles.resenasGrid}>
-              {resenas.map(resena => (
-                <article key={resena.id} className={styles.resenaCard}>
-                  <div className={styles.resenaHeader}>
-                    <Avatar nombre={resena.nombre} />
-                    <div>
-                      <p className={styles.resenaNombre}>{resena.nombre}</p>
-                      <Estrellas cantidad={resena.estrellas} />
-                    </div>
-                    <time className={styles.resenaFecha}>{resena.fecha}</time>
-                  </div>
-                  <p className={styles.resenaTexto}>{resena.texto}</p>
-                </article>
-              ))}
-            </div>
-          </section>
 
         </div>
       </main>
