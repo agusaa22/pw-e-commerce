@@ -71,3 +71,18 @@
 2. `FeaturedProducts` ahora hace `fetch('/api/productos')` real en vez de un import simulado (cubre E3+E4: fetch integrado).
 3. Componente `ContactForm` con validación en JavaScript: nombre, email y mensaje con errores en tiempo real (cubre E3: formulario dinámico con validación).
 4. Versión HTML del formulario en `index.html` con validación nativa de HTML5 (required, type="email").
+
+## 20. Agregar checkout con formulario de pago
+> bien claude pero me falta esto: crea un carrito de compras para todos los productos, crea una interfaz donde se entre a el carrito y se pueda ver el checkout y el pago de la compra.
+
+**Resultado:** El carrito ya existía en `/carrito`. Se agregó:
+1. Página de checkout en `/checkout` con formulario de pago (nombre, email, dirección, tarjeta) con validación JavaScript.
+2. Resumen del pedido con imagen, cantidad y precio de cada producto.
+3. Simulación de procesamiento de pago y confirmación de compra.
+4. Al confirmar, se vacía el carrito con `vaciarCarrito()` del Context.
+5. Botón "Finalizar compra" en el carrito que lleva a `/checkout`.
+
+## 21. Actualizar deploy en Vercel
+> actualizame el vercel
+
+**Resultado:** Se hizo commit y push a GitHub. Vercel detecta el push y despliega automáticamente.

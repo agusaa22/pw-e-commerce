@@ -63,6 +63,15 @@ export default function CheckoutPage() {
     POR QUÉ un solo objeto: misma lógica que en ContactForm.
     Un handleChange genérico actualiza cualquier campo.
   */
+  /*
+    metodoPago: guarda qué método de pago eligió el usuario.
+    Arranca vacío ('') y se actualiza cuando el usuario selecciona una opción.
+    POR QUÉ un estado separado del form: el método de pago no es un campo
+    de texto — es una selección entre opciones. Separarlo hace más claro
+    el código y la validación.
+  */
+  const [metodoPago, setMetodoPago] = useState('')
+
   const [form, setForm] = useState({
     nombre: '',
     email: '',
@@ -120,10 +129,22 @@ export default function CheckoutPage() {
       nuevosErrores.direccion = 'La dirección es obligatoria'
     }
 
-    if (!form.tarjeta.trim()) {
-      nuevosErrores.tarjeta = 'El número de tarjeta es obligatorio'
-    } else if (form.tarjeta.replace(/\s/g, '').length < 16) {
-      nuevosErrores.tarjeta = 'Ingresá los 16 dígitos de la tarjeta'
+    /*
+      Validación del método de pago:
+      Si no eligió ninguno, mostramos error.
+      El campo tarjeta SOLO se valida si eligió 'debito',
+      porque efectivo y Mercado Pago no necesitan número de tarjeta.
+    */
+    if (!metodoPago) {
+      nuevosErrores.metodoPago = 'Elegí un método de pago'
+    }
+
+    if (metodoPago === 'debito') {
+      if (!form.tarjeta.trim()) {
+        nuevosErrores.tarjeta = 'El número de tarjeta es obligatorio'
+      } else if (form.tarjeta.replace(/\s/g, '').length < 16) {
+        nuevosErrores.tarjeta = 'Ingresá los 16 dígitos de la tarjeta'
+      }
     }
 
     return nuevosErrores
@@ -295,29 +316,81 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              {/* ── SEPARADOR DE SECCIÓN ─────────────────────────────── */}
-              <h2 className={styles.seccionTitulo}>Datos de pago</h2>
+              {/* ── MÉTODO DE PAGO ──────────────────────────────────── */}
+              {/*
+                QUÉ HACE: El usuario elige cómo quiere pagar.
+                POR QUÉ <select>: es el elemento HTML estándar para
+                elegir UNA opción de una lista. Más accesible que
+                botones custom porque los lectores de pantalla lo
+                reconocen automáticamente como "lista desplegable".
 
-              {/* ── CAMPO TARJETA ────────────────────────────────────── */}
+                onChange: cada vez que el usuario cambia la opción,
+                actualizamos el estado metodoPago con setMetodoPago.
+                e.target.value contiene el valor de la opción elegida
+                (ej: "efectivo", "mercadopago", "debito").
+              */}
+              <h2 className={styles.seccionTitulo}>Método de pago</h2>
+
               <div className={styles.campo}>
-                <label htmlFor="ch-tarjeta">Número de tarjeta</label>
-                <input
-                  id="ch-tarjeta"
-                  name="tarjeta"
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  value={form.tarjeta}
-                  onChange={handleChange}
-                  maxLength={19}
-                  aria-invalid={errores.tarjeta ? 'true' : 'false'}
-                  aria-describedby={errores.tarjeta ? 'error-ch-tarjeta' : undefined}
-                />
-                {errores.tarjeta && (
-                  <span id="error-ch-tarjeta" className={styles.error} aria-live="polite">
-                    {errores.tarjeta}
+                <label htmlFor="ch-metodo">Elegí cómo pagar</label>
+                <select
+                  id="ch-metodo"
+                  value={metodoPago}
+                  onChange={(e) => setMetodoPago(e.target.value)}
+                  className={styles.select}
+                  aria-invalid={errores.metodoPago ? 'true' : 'false'}
+                  aria-describedby={errores.metodoPago ? 'error-ch-metodo' : undefined}
+                >
+                  {/*
+                    La primera opción tiene value="" y está deshabilitada.
+                    POR QUÉ: Actúa como placeholder — le indica al usuario
+                    que debe elegir una opción. Al estar disabled, no se
+                    puede seleccionar una vez que eligió otra.
+                  */}
+                  <option value="" disabled>— Seleccioná un método —</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="mercadopago">Mercado Pago</option>
+                  <option value="debito">Tarjeta de débito</option>
+                </select>
+                {errores.metodoPago && (
+                  <span id="error-ch-metodo" className={styles.error} aria-live="polite">
+                    {errores.metodoPago}
                   </span>
                 )}
               </div>
+
+              {/* ── CAMPO TARJETA (condicional) ──────────────────────── */}
+              {/*
+                RENDERIZADO CONDICIONAL: este campo SOLO aparece si el
+                usuario eligió "debito" como método de pago.
+                POR QUÉ: No tiene sentido pedir número de tarjeta si
+                va a pagar en efectivo o por Mercado Pago.
+
+                metodoPago === 'debito' && (...) es un patrón de React:
+                si la condición es true, renderiza lo que está después del &&.
+                Si es false, no renderiza nada.
+              */}
+              {metodoPago === 'debito' && (
+                <div className={styles.campo}>
+                  <label htmlFor="ch-tarjeta">Número de tarjeta</label>
+                  <input
+                    id="ch-tarjeta"
+                    name="tarjeta"
+                    type="text"
+                    placeholder="1234 5678 9012 3456"
+                    value={form.tarjeta}
+                    onChange={handleChange}
+                    maxLength={19}
+                    aria-invalid={errores.tarjeta ? 'true' : 'false'}
+                    aria-describedby={errores.tarjeta ? 'error-ch-tarjeta' : undefined}
+                  />
+                  {errores.tarjeta && (
+                    <span id="error-ch-tarjeta" className={styles.error} aria-live="polite">
+                      {errores.tarjeta}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* ── BOTÓN CONFIRMAR ──────────────────────────────────── */}
               {/*

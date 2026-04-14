@@ -57,7 +57,6 @@ export default function Header() {
                   elemento con id="destacados" sin recargar la página.
                 */}
                 <li><a href="#destacados">VELAS</a></li>
-                <li><Link href="/carrito">CARRITO</Link></li>
               </ul>
             </nav>
 

@@ -98,14 +98,44 @@
   transition: border-color 0.2s;
 }
 
-.campo input:focus {
+/* ─── SELECT (método de pago) ─────────────────────────────────────────── */
+/*
+  Estilos del <select> para que se vea igual que los <input>.
+  appearance: none quita el estilo nativo del navegador
+  para que podamos personalizarlo con CSS.
+*/
+.select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.2s;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select:focus {
   outline: none;
   border-color: var(--color-dorado);
   box-shadow: 0 0 0 3px rgba(184, 139, 110, 0.15);
 }
 
-/* Input con error */
-.campo input[aria-invalid="true"] {
+.select[aria-invalid="true"] {
+  border-color: #e74c3c;
+}
+
+.campo input:focus,
+.campo select:focus {
+  outline: none;
+  border-color: var(--color-dorado);
+  box-shadow: 0 0 0 3px rgba(184, 139, 110, 0.15);
+}
+
+/* Input o select con error */
+.campo input[aria-invalid="true"],
+.campo select[aria-invalid="true"] {
   border-color: #e74c3c;
 }
 
