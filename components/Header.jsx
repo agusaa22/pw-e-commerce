@@ -15,6 +15,7 @@
 
 import Link from 'next/link'
 import CartIcon from './CartIcon'
+import UserMenu from './UserMenu'
 import styles from './Header.module.css'
 
 export default function Header() {
@@ -50,30 +51,27 @@ export default function Header() {
               esto es navegación. aria-label lo diferencia de otros nav
               que pueda haber en la página (como el del footer).
             */}
+            {/*
+              Usamos <Link href="/#seccion"> en vez de <a href="#seccion">
+              para que los links funcionen desde CUALQUIER página (no solo
+              desde la home). Por ejemplo, si estás en /carrito y hacés
+              clic en VELAS, te lleva a la home y scrollea a la sección.
+            */}
             <nav className={styles.mainNav} aria-label="Navegación principal">
               <ul>
-                {/*
-                  href="#destacados" es un ancla: scrollea hasta el
-                  elemento con id="destacados" sin recargar la página.
-                */}
-                <li><a href="#destacados">VELAS</a></li>
+                <li><Link href="/#velas">VELAS</Link></li>
+                <li><Link href="/#aromatizantes">AROMATIZANTES</Link></li>
+                <li><Link href="/#sets">SETS</Link></li>
               </ul>
             </nav>
 
             <div className={styles.headerActions} aria-label="Acciones del usuario">
 
-              {/* ÍCONO USUARIO — decorativo */}
               {/*
-                aria-label describe la acción para lectores de pantalla.
-                aria-hidden="true" en el SVG porque el aria-label del <a>
-                ya lo describe — evita que el lector lea el SVG como texto.
+                MENÚ DE USUARIO — Client Component que muestra "Ingresar"
+                o el nombre del usuario + "Salir" según haya o no sesión.
               */}
-              <a href="#" className={styles.iconLink} aria-label="Mi cuenta">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" />
-                </svg>
-              </a>
+              <UserMenu />
 
               {/*
                 CARRITO — Client Component separado.

@@ -1,4 +1,49 @@
-.agregado {
-  background-color: var(--color-dorado) !important;
-  transform: scale(1) !important;
+/*
+  Estilos del control de cantidad que aparece cuando un producto
+  ya está en el carrito.
+*/
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  background-color: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0;
+  height: 40px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  width: 36px;
+  height: 100%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  font-family: inherit;
+}
+
+.btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-rosa, #d68fa2);
+  outline-offset: -2px;
+}
+
+.cantidad {
+  min-width: 30px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 6px;
 }

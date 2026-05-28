@@ -1,0 +1,233 @@
+/*
+  Estilos del panel /admin.
+*/
+
+.pagina {
+  min-height: 70vh;
+  padding: 40px 20px;
+  background-color: var(--color-fondo, #faf5ef);
+}
+
+.contenedor {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.titulo {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.subtitulo {
+  margin: 0 0 28px;
+  color: #666;
+  font-size: 15px;
+}
+
+.bloqueado {
+  text-align: center;
+  padding: 80px 20px;
+  color: #666;
+}
+
+.tarjeta {
+  background-color: var(--color-blanco, #fff);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.seccionTitulo {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Aviso de éxito / error */
+.aviso {
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ok    { background-color: #e7f5ec; color: #1e7c3a; }
+.error { background-color: #fdecea; color: #b3261e; }
+
+/* ── FORM EN GRILLA ────────────────────────────────────────────────── */
+.grilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.campoAncho { grid-column: span 2; }
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.campo span {
+  font-weight: 500;
+  color: #333;
+}
+
+.campo input,
+.campo textarea,
+.campo select {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background-color: #fff;
+}
+
+.campo input:focus,
+.campo textarea:focus,
+.campo select:focus {
+  border-color: var(--color-rosa, #d68fa2);
+}
+
+.hint {
+  color: #888;
+  font-size: 12px;
+}
+.hint code {
+  background-color: #f3f3f3;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.checkbox {
+  grid-column: span 2;
+  display: flex;
+  gap: 24px;
+  margin-top: 4px;
+}
+
+.checkbox label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.acciones {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.botonGuardar {
+  padding: 11px 22px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s ease;
+}
+.botonGuardar:hover { opacity: 0.85; }
+
+.botonCancelar {
+  padding: 11px 22px;
+  background: none;
+  color: #1a1a1a;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.botonCancelar:hover { background-color: #f6f6f6; }
+
+/* ── TABLA DE PRODUCTOS ────────────────────────────────────────────── */
+.tablaWrap {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla th,
+.tabla td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.tabla th {
+  font-weight: 600;
+  color: #555;
+  background-color: #fafafa;
+}
+
+.tabla tr:hover td { background-color: #fafafa; }
+
+.filaInactiva td { color: #aaa; }
+
+.celdaAcciones {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btnEditar,
+.btnAlternar,
+.btnBorrar {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.btnEditar {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+.btnEditar:hover { opacity: 0.85; }
+
+.btnAlternar {
+  background: none;
+  border-color: #aaa;
+  color: #333;
+}
+.btnAlternar:hover { background-color: #f3f3f3; }
+
+.btnBorrar {
+  background-color: #fdecea;
+  color: #b3261e;
+}
+.btnBorrar:hover { background-color: #f9d4d1; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .grilla { grid-template-columns: 1fr; }
+  .campoAncho { grid-column: span 1; }
+  .checkbox { grid-column: span 1; flex-direction: column; gap: 8px; }
+  .acciones { grid-column: span 1; flex-direction: column; }
+  .botonGuardar, .botonCancelar { width: 100%; }
+}

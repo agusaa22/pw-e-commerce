@@ -1,0 +1,184 @@
+/*
+  Estilos de la página /cuenta (Mi cuenta).
+*/
+
+.pagina {
+  min-height: 70vh;
+  padding: 40px 20px;
+  background-color: var(--color-fondo, #faf5ef);
+}
+
+.contenedor {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.titulo {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.subtitulo {
+  margin: 0 0 30px;
+  color: #666;
+  font-size: 15px;
+}
+
+.tarjeta {
+  background-color: var(--color-blanco, #fff);
+  border-radius: 16px;
+  padding: 30px 28px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.seccionTitulo {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Grilla de 2 columnas que se acomoda en mobile */
+.grilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.campoAncho {
+  grid-column: span 2;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.campo span {
+  font-weight: 500;
+  color: #333;
+}
+
+.campo input {
+  padding: 11px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.campo input:focus {
+  border-color: var(--color-rosa, #d68fa2);
+}
+
+.inputReadonly {
+  background-color: #f6f6f6;
+  color: #555;
+  cursor: not-allowed;
+}
+
+.hint {
+  color: #888;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Acciones (botón + mensajes) ocupan todo el ancho */
+.acciones {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.boton {
+  padding: 12px 24px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  font-family: inherit;
+}
+
+.boton:hover { opacity: 0.85; }
+.boton:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.error {
+  margin: 0;
+  padding: 10px 14px;
+  background-color: #fdecea;
+  color: #b3261e;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.ok {
+  margin: 0;
+  padding: 10px 14px;
+  background-color: #e7f5ec;
+  color: #1e7c3a;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+/* Toggle mostrar/ocultar password */
+.passwordWrap {
+  position: relative;
+  display: flex;
+}
+
+.passwordInput {
+  width: 100%;
+  padding: 11px 84px 11px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.passwordInput:focus {
+  border-color: var(--color-rosa, #d68fa2);
+}
+
+.togglePassword {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-rosa-dark, #b87689);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.togglePassword:hover {
+  background-color: rgba(184, 118, 137, 0.1);
+}
+
+/* Responsive: en mobile, una columna */
+@media (max-width: 640px) {
+  .grilla { grid-template-columns: 1fr; }
+  .campoAncho { grid-column: span 1; }
+  .acciones { grid-column: span 1; align-items: stretch; }
+  .boton { width: 100%; }
+}

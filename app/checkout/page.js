@@ -20,10 +20,12 @@
 */
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
+import { crearOrden } from '@/lib/ordenes'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import styles from './checkout.module.css'
@@ -50,6 +52,9 @@ export default function CheckoutPage() {
   */
   const router = useRouter()
 
+  // Necesitamos saber quién está logueado para asociar la orden a su usuario
+  const { usuario, perfil, cargando: cargandoAuth } = useAuth()
+
   /*
     Destructuramos del CartContext lo que necesitamos:
     - items: array de productos en el carrito
@@ -57,6 +62,24 @@ export default function CheckoutPage() {
     - vaciarCarrito: función que pone items en []
   */
   const { items, totalPrecio, vaciarCarrito } = useCart()
+
+  // Protección: si no hay sesión, lo mandamos a login para que se autentique
+  useEffect(() => {
+    if (!cargandoAuth && !usuario) {
+      router.push('/login')
+    }
+  }, [cargandoAuth, usuario, router])
+
+  // Autocompletar el formulario con los datos del perfil (los que guardó en /cuenta)
+  useEffect(() => {
+    if (!perfil) return
+    setForm((prev) => ({
+      ...prev,
+      nombre: prev.nombre || perfil.nombre || '',
+      email: prev.email || usuario?.email || '',
+      direccion: prev.direccion || perfil.direccion || '',
+    }))
+  }, [perfil, usuario])
 
   /*
     Estado del formulario: un objeto con los 4 campos de pago.
@@ -152,34 +175,51 @@ export default function CheckoutPage() {
 
   /*
     EVENTO: handleSubmit — se ejecuta al confirmar la compra.
-    e.preventDefault() evita que el formulario recargue la página.
-    Valida los campos, simula el procesamiento del pago,
-    vacía el carrito y muestra la confirmación.
+    Ahora crea una ORDEN REAL en Supabase:
+      1. Valida el formulario.
+      2. Llama a crearOrden() que inserta en las tablas "ordenes" y "orden_items".
+      3. Si todo OK, vacía el carrito y muestra la pantalla de éxito.
   */
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
 
-    // 1. Validar
-    const nuevosErrores = validar()
+    // 1. Si no hay usuario, vamos a login (las órdenes necesitan un usuario)
+    if (!usuario) {
+      router.push('/login')
+      return
+    }
 
-    // 2. Si hay errores, mostrarlos y NO procesar
+    // 2. Validar
+    const nuevosErrores = validar()
     if (Object.keys(nuevosErrores).length > 0) {
       setErrores(nuevosErrores)
       return
     }
 
-    // 3. Simular procesamiento del pago
+    // 3. Crear la orden en Supabase
     setProcesando(true)
+    const { error } = await crearOrden({
+      usuario,
+      items,
+      total: totalPrecio,
+      datosEnvio: {
+        nombre: form.nombre,
+        email: form.email,
+        direccion: form.direccion,
+        metodoPago,
+      },
+    })
+    setProcesando(false)
 
-    /*
-      setTimeout simula la demora de procesar un pago real.
-      En producción sería un fetch POST a una API de pagos.
-    */
-    setTimeout(() => {
-      setProcesando(false)
-      setConfirmado(true)
-      vaciarCarrito() // Limpia el carrito usando el Context
-    }, 2000)
+    if (error) {
+      setErrores({ general: 'No pudimos procesar tu compra. Intentá de nuevo.' })
+      console.error('Error al crear orden:', error)
+      return
+    }
+
+    // 4. Éxito: vaciamos el carrito y mostramos confirmación
+    setConfirmado(true)
+    vaciarCarrito()
   }
 
   /* ── COMPRA CONFIRMADA ───────────────────────────────────────────────────── */
@@ -390,6 +430,13 @@ export default function CheckoutPage() {
                     </span>
                   )}
                 </div>
+              )}
+
+              {/* Mensaje de error general (si la creación de la orden falló) */}
+              {errores.general && (
+                <p className={styles.error} role="alert" style={{ marginTop: 12 }}>
+                  {errores.general}
+                </p>
               )}
 
               {/* ── BOTÓN CONFIRMAR ──────────────────────────────────── */}

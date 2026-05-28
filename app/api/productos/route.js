@@ -1,41 +1,52 @@
 /*
   API ROUTE: /api/productos
-  QUÉ HACE: Devuelve la lista de productos en formato JSON cuando alguien
-           hace un GET a /api/productos.
-  POR QUÉ: En Next.js App Router, un archivo route.js dentro de /app/api/
-           define un endpoint de API (como un mini backend).
-           Esto permite que el frontend haga fetch('/api/productos')
-           y reciba los datos como si fuera una API real.
+  QUÉ HACE: Devuelve los productos ACTIVOS leyéndolos de Supabase.
+  POR QUÉ mapeamos los nombres: en la base las columnas se llaman
+           imagen_url, tamanio, etc. Pero tus componentes usan
+           imagen, peso, categoria. Traducimos los nombres acá
+           para no tener que tocar ProductCard.
 
-  QUÉ PASARÍA SI SE SACA: FeaturedProducts no podría obtener los productos
-           con fetch() y la sección quedaría vacía.
-
-  MÓDULO C — Este archivo demuestra:
-    - Cómo funciona una API: recibe un request HTTP y devuelve un response JSON.
-    - Separación frontend/backend: el componente React no accede directamente
-      a los datos, los pide a través de una URL (como haría con cualquier API externa).
-
-  MÓDULO D — Route Handlers de Next.js:
-    - En Next.js, "export async function GET()" define qué pasa cuando
-      alguien hace una petición GET a esta URL.
-    - NextResponse.json() convierte un objeto JavaScript en respuesta JSON
-      con el header Content-Type correcto.
+  El catálogo está controlado 100% desde el panel admin: lo que veas
+  acá es lo que tenés con activo=true en la tabla productos. Para
+  ocultar algo, desde /admin tocá "Desactivar". Para mostrarlo de
+  vuelta, "Activar".
 */
-
 import { NextResponse } from 'next/server'
-import products from '@/data/products'
+import { supabase } from '@/lib/supabaseClient'
 
-/*
-  QUÉ HACE: Función que maneja peticiones GET a /api/productos.
-  POR QUÉ async: las funciones de API en Next.js son async por convención,
-           ya que en producción podrían consultar una base de datos (operación async).
-  RETORNA: NextResponse.json() — convierte el array de productos a JSON
-           y lo envía con status 200 (éxito) automáticamente.
+// Esta línea le dice a Next.js: "nunca caches esta API, traé datos frescos siempre"
+export const dynamic = 'force-dynamic'
 
-  En producción, acá se haría algo como:
-    const { data } = await supabase.from('productos').select('*')
-    return NextResponse.json(data)
-*/
 export async function GET() {
-  return NextResponse.json(products)
+  // Traemos los productos activos + el nombre de su categoría (join)
+  const { data, error } = await supabase
+    .from('productos')
+    .select(`
+      id, nombre, descripcion, precio, stock, aroma, tamanio,
+      imagen_url, imagen_hogar_url, destacado, activo,
+      categorias ( nombre )
+    `)
+    .eq('activo', true)
+    .order('id')
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Traducimos los nombres de columnas a los que usan tus componentes
+  const productos = data.map((p) => ({
+    id: p.id,
+    nombre: p.nombre,
+    descripcion: p.descripcion,
+    precio: p.precio,
+    stock: p.stock,
+    aroma: p.aroma,
+    peso: p.tamanio,
+    categoria: p.categorias?.nombre ?? '',
+    imagen: p.imagen_url,
+    imagenHogar: p.imagen_hogar_url,
+    destacado: p.destacado,
+  }))
+
+  return NextResponse.json(productos)
 }

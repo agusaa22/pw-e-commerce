@@ -1,0 +1,191 @@
+/*
+  Estilos compartidos por las páginas /login y /registro.
+  La página de registro lo importa con ../login/auth.module.css
+*/
+
+.pagina {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: var(--color-fondo, #faf5ef);
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--color-blanco, #fff);
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.titulo {
+  margin: 0 0 24px;
+  font-size: 28px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.campo span {
+  font-weight: 500;
+  color: #333;
+}
+
+.campo input {
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.campo input:focus {
+  border-color: var(--color-rosa, #d68fa2);
+}
+
+/* Campo de contraseña con botón "Mostrar / Ocultar" pegado a la derecha */
+.passwordWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInput {
+  width: 100%;
+  padding: 12px 84px 12px 14px; /* deja lugar al botón a la derecha */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.passwordInput:focus {
+  border-color: var(--color-rosa, #d68fa2);
+}
+
+.togglePassword {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-rosa-dark, #b87689);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  transition: background-color 0.2s ease;
+}
+
+.togglePassword:hover {
+  background-color: rgba(184, 118, 137, 0.1);
+}
+
+/* ── Pantalla de éxito al registrarse ────────────────────────────────── */
+.exito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 0;
+  animation: aparecer 0.4s ease;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.checkCirculo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #2ea043;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 18px rgba(46, 160, 67, 0.3);
+}
+
+.tituloExito {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.subExito {
+  margin: 0;
+  color: #666;
+  font-size: 15px;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  background-color: #fdecea;
+  color: #b3261e;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.boton {
+  margin-top: 8px;
+  padding: 14px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.boton:hover {
+  opacity: 0.85;
+}
+
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pie {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.pie a {
+  color: var(--color-rosa-dark, #b87689);
+  text-decoration: underline;
+  font-weight: 500;
+}

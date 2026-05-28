@@ -7,6 +7,7 @@
 */
 
 import './globals.css'
+import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
 
 /*
@@ -41,9 +42,16 @@ export default function RootLayout({ children }) {
         puede acceder al carrito con useCart() sin recibir props.
       */}
       <body>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        {/*
+          AuthProvider va POR FUERA de CartProvider:
+          el carrito (más adelante) va a usar useAuth() para saber a qué
+          usuario asociar las cosas, así que necesita estar dentro de Auth.
+        */}
+        <AuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   )

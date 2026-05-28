@@ -23,19 +23,13 @@ export default function ProductCard({ producto }) {
     <article className={styles.card}>
 
       {/* ── IMAGEN → linkea a la página de detalle ──────────────────────── */}
+      {/* Se quita el efecto hover con segunda imagen porque solo aplicaba a 4 productos */}
       <Link href={`/productos/${producto.id}`} className={styles.imagenLink}>
         <img
           src={producto.imagen}
-          alt={`Vela artesanal ${producto.nombre} — ${producto.categoria}`}
+          alt={`${producto.nombre} — ${producto.categoria}`}
           className={styles.imagen}
         />
-        {producto.imagenHogar && (
-          <img
-            src={producto.imagenHogar}
-            alt={`${producto.nombre} en el hogar`}
-            className={styles.imagenHogar}
-          />
-        )}
       </Link>
 
       {/* ── INFORMACIÓN ─────────────────────────────────────────────────── */}

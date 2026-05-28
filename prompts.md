@@ -86,3 +86,19 @@
 > actualizame el vercel
 
 **Resultado:** Se hizo commit y push a GitHub. Vercel detecta el push y despliega automáticamente.
+
+## 22. Sacar "CARRITO" del menú y agregar métodos de pago
+> necesito dos cosas:
+> 1) que me saques del menu la opcion "carrito" ya que se vuelve repetitivo
+> 2) que en la opcion de metodo pago me agregues, efectivo, mercado pago, y tarjeta de debito
+
+**Resultado:**
+1. Se eliminó el link "CARRITO" del nav del Header. El usuario accede al carrito desde el ícono (CartIcon).
+2. Se agregó un `<select>` con 3 métodos de pago: Efectivo, Mercado Pago y Tarjeta de débito.
+3. El campo de número de tarjeta solo aparece si elige "Tarjeta de débito" (renderizado condicional con `&&`).
+4. La validación es condicional: solo pide los 16 dígitos si eligió débito.
+
+## 23. Limpiar archivos que no se usan
+> elimina todo lo que no sirva, deja todo perfectamente claro
+
+**Resultado:** Se eliminaron archivos sobrantes que ya no formaban parte del proyecto: páginas de catálogo (aromatizantes, sets, velas), componentes CatalogPage y Categories, y data/reviews.js. El proyecto quedó limpio con solo los archivos necesarios.
