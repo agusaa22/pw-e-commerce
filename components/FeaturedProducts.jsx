@@ -24,28 +24,41 @@ export default function FeaturedProducts() {
   const [cargando, setCargando]   = useState(true)
   const [error, setError]         = useState(null)
 
-  useEffect(() => {
-    async function obtenerProductos() {
-      try {
-        // Triple candado contra el caché del navegador:
-        //  - cache: 'no-store' → no usa la respuesta cacheada.
-        //  - headers no-cache → pide explícitamente una respuesta fresca.
-        //  - ?t=timestamp → cada pedido tiene una URL única, así nada puede coincidir.
-        const respuesta = await fetch('/api/productos?t=' + Date.now(), {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' },
-        })
-        if (!respuesta.ok) throw new Error('Error al obtener los productos')
-        const datos = await respuesta.json()
-        setProductos(datos)
-      } catch (err) {
-        setError('No pudimos cargar los productos. Intentá de nuevo.')
-        console.error('Error en obtenerProductos:', err)
-      } finally {
-        setCargando(false)
-      }
+  async function obtenerProductos() {
+    try {
+      // Triple candado contra el caché del navegador:
+      //  - cache: 'no-store' → no usa la respuesta cacheada.
+      //  - headers no-cache → pide explícitamente una respuesta fresca.
+      //  - ?t=timestamp → cada pedido tiene una URL única, así nada puede coincidir.
+      const respuesta = await fetch('/api/productos?t=' + Date.now(), {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      })
+      if (!respuesta.ok) throw new Error('Error al obtener los productos')
+      const datos = await respuesta.json()
+      setProductos(datos)
+    } catch (err) {
+      setError('No pudimos cargar los productos. Intentá de nuevo.')
+      console.error('Error en obtenerProductos:', err)
+    } finally {
+      setCargando(false)
     }
+  }
+
+  useEffect(() => {
     obtenerProductos()
+
+    // Refrescar el catálogo cuando la pestaña vuelve a estar visible.
+    // Así, si editás algo en admin y volvés a la home, se ve el cambio al toque.
+    function onVisible() {
+      if (document.visibilityState === 'visible') obtenerProductos()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', obtenerProductos)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', obtenerProductos)
+    }
   }, [])
 
   /*
