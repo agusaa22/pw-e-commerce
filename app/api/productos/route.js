@@ -1,24 +1,21 @@
 /*
   API ROUTE: /api/productos
   QUÉ HACE: Devuelve los productos ACTIVOS leyéndolos de Supabase.
-  POR QUÉ mapeamos los nombres: en la base las columnas se llaman
-           imagen_url, tamanio, etc. Pero tus componentes usan
-           imagen, peso, categoria. Traducimos los nombres acá
-           para no tener que tocar ProductCard.
-
-  El catálogo está controlado 100% desde el panel admin: lo que veas
-  acá es lo que tenés con activo=true en la tabla productos. Para
-  ocultar algo, desde /admin tocá "Desactivar". Para mostrarlo de
-  vuelta, "Activar".
+  POR QUÉ los headers anti-caché en la respuesta:
+    Sin esto Vercel cachea la respuesta a nivel edge/CDN, y aunque el cliente
+    pida fresh, Vercel devuelve la versión vieja. Los 3 headers más
+    `revalidate = 0` aseguran que la API siempre devuelva el dato actual.
 */
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabaseClient'
 
-// Esta línea le dice a Next.js: "nunca caches esta API, traé datos frescos siempre"
+// Next.js: nunca generes una versión estática de esta ruta
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+export const runtime = 'nodejs'
 
 export async function GET() {
-  // Traemos los productos activos + el nombre de su categoría (join)
   const { data, error } = await supabase
     .from('productos')
     .select(`
@@ -33,7 +30,6 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Traducimos los nombres de columnas a los que usan tus componentes
   const productos = data.map((p) => ({
     id: p.id,
     nombre: p.nombre,
@@ -48,5 +44,14 @@ export async function GET() {
     destacado: p.destacado,
   }))
 
-  return NextResponse.json(productos)
+  // Respuesta con headers que prohíben CUALQUIER tipo de caché
+  return NextResponse.json(productos, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'CDN-Cache-Control': 'no-store',
+      'Vercel-CDN-Cache-Control': 'no-store',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
+  })
 }
