@@ -5,12 +5,12 @@
              1. Confirma la orden en el servidor (estado = pagada, mp_payment_id).
              2. Borra el carrito en la base.
              3. Recarga el carrito local desde la base (queda vacío).
-  NOTA: El componente que usa useSearchParams() va envuelto en <Suspense>
-        porque Next.js 14 lo exige para poder pre-renderizar la página.
+           Usa useRef para que el efecto NO se dispare más de una vez,
+           evitando una race condition con CartProvider.
 */
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
@@ -21,49 +21,60 @@ import styles from '../checkout.module.css'
 
 function ContenidoExito() {
   const searchParams = useSearchParams()
-
-  // Datos que envía Mercado Pago en la URL al redirigir
   const ordenId = searchParams.get('orden')
   const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id')
   const collectionStatus = searchParams.get('collection_status') || searchParams.get('status') || 'approved'
 
-  const { recargarCarrito, vaciarCarrito } = useCart()
+  const { recargarCarrito } = useCart()
   const { cargando: cargandoAuth } = useAuth()
-  const [procesado, setProcesado] = useState(false)
+
+  // useRef: evita que el efecto corra dos veces aunque el componente se re-renderice
+  const yaProceso = useRef(false)
+  const [textoDebug, setTextoDebug] = useState('')
 
   useEffect(() => {
-    // Esperamos a que termine de cargar la sesión antes de hacer nada
-    if (cargandoAuth || procesado) return
+    // Esperamos a que termine de cargar la sesión y a no haberlo hecho antes
+    if (cargandoAuth) return
+    if (yaProceso.current) return
+    yaProceso.current = true
 
     async function confirmarYLimpiar() {
       // 1) Confirmar la orden en el servidor (actualiza estado + vacía carrito en DB)
-      if (ordenId && paymentId) {
+      let resultadoConfirmacion = 'sin orden en URL'
+      if (ordenId) {
         try {
-          await fetch('/api/checkout/confirmar', {
+          const res = await fetch('/api/checkout/confirmar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ordenId, paymentId, status: collectionStatus }),
           })
+          const data = await res.json()
+          resultadoConfirmacion = res.ok
+            ? `OK estado=${data.estado}`
+            : `Error ${res.status}: ${data.error || 'desconocido'}`
         } catch (err) {
-          console.error('Error confirmando orden:', err)
+          resultadoConfirmacion = `Excepción: ${err.message}`
         }
       }
 
-      // 2) Recargar el carrito local desde la DB (que ya está vacía después del paso 1).
-      //    Esto evita la race condition con el CartContext que también recarga al montarse.
-      try {
-        await recargarCarrito()
-      } catch {
-        await vaciarCarrito() // por si el usuario es invitado (sin DB), lo vaciamos local
-      }
+      // 2) Recargar el carrito local desde la DB. Lo hacemos DOS veces con
+      //    un pequeño delay para vencer cualquier carga en paralelo del
+      //    CartProvider que pueda volver a leer la DB con items viejos.
+      try { await recargarCarrito() } catch {}
+      await new Promise((r) => setTimeout(r, 400))
+      try { await recargarCarrito() } catch {}
 
-      setProcesado(true)
+      // Guardamos el resultado para mostrar en pantalla si la URL trae ?debug=1
+      setTextoDebug(resultadoConfirmacion)
     }
 
     confirmarYLimpiar()
-  }, [cargandoAuth, procesado, ordenId, paymentId, collectionStatus, recargarCarrito, vaciarCarrito])
+    // Solo depende de cargandoAuth: cuando termina de cargar, dispara una vez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cargandoAuth])
 
   const esPendiente = collectionStatus === 'pending' || collectionStatus === 'in_process'
+  const mostrarDebug = searchParams.get('debug') === '1'
 
   return (
     <div className={styles.exito} role="alert">
@@ -76,6 +87,11 @@ function ContenidoExito() {
       {ordenId && (
         <p style={{ marginTop: 10, opacity: 0.8 }}>
           Número de orden: <strong>#{ordenId}</strong>
+        </p>
+      )}
+      {mostrarDebug && (
+        <p style={{ marginTop: 14, fontFamily: 'monospace', fontSize: 12, color: '#888' }}>
+          debug: {textoDebug || 'esperando...'}
         </p>
       )}
       <Link href="/" className={styles.btnVolver}>
