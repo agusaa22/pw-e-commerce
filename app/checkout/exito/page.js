@@ -1,7 +1,10 @@
 /*
   PÁGINA: /checkout/exito
   QUÉ HACE: Es la página a la que Mercado Pago redirige al cliente después
-           del pago. Vacía el carrito y muestra una confirmación visual.
+           del pago. Apenas carga:
+             1. Confirma la orden en el servidor (estado = pagada, mp_payment_id).
+             2. Borra el carrito en la base.
+             3. Recarga el carrito local desde la base (queda vacío).
   NOTA: El componente que usa useSearchParams() va envuelto en <Suspense>
         porque Next.js 14 lo exige para poder pre-renderizar la página.
 */
@@ -11,25 +14,56 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import styles from '../checkout.module.css'
 
 function ContenidoExito() {
   const searchParams = useSearchParams()
+
+  // Datos que envía Mercado Pago en la URL al redirigir
   const ordenId = searchParams.get('orden')
-  const status = searchParams.get('status') || 'approved'
-  const { vaciarCarrito } = useCart()
-  const [vaciado, setVaciado] = useState(false)
+  const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id')
+  const collectionStatus = searchParams.get('collection_status') || searchParams.get('status') || 'approved'
+
+  const { recargarCarrito, vaciarCarrito } = useCart()
+  const { cargando: cargandoAuth } = useAuth()
+  const [procesado, setProcesado] = useState(false)
 
   useEffect(() => {
-    if (!vaciado) {
-      vaciarCarrito()
-      setVaciado(true)
-    }
-  }, [vaciado, vaciarCarrito])
+    // Esperamos a que termine de cargar la sesión antes de hacer nada
+    if (cargandoAuth || procesado) return
 
-  const esPendiente = status === 'pending'
+    async function confirmarYLimpiar() {
+      // 1) Confirmar la orden en el servidor (actualiza estado + vacía carrito en DB)
+      if (ordenId && paymentId) {
+        try {
+          await fetch('/api/checkout/confirmar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ordenId, paymentId, status: collectionStatus }),
+          })
+        } catch (err) {
+          console.error('Error confirmando orden:', err)
+        }
+      }
+
+      // 2) Recargar el carrito local desde la DB (que ya está vacía después del paso 1).
+      //    Esto evita la race condition con el CartContext que también recarga al montarse.
+      try {
+        await recargarCarrito()
+      } catch {
+        await vaciarCarrito() // por si el usuario es invitado (sin DB), lo vaciamos local
+      }
+
+      setProcesado(true)
+    }
+
+    confirmarYLimpiar()
+  }, [cargandoAuth, procesado, ordenId, paymentId, collectionStatus, recargarCarrito, vaciarCarrito])
+
+  const esPendiente = collectionStatus === 'pending' || collectionStatus === 'in_process'
 
   return (
     <div className={styles.exito} role="alert">

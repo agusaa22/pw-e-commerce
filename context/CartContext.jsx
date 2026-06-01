@@ -21,35 +21,37 @@ export function CartProvider({ children }) {
   const { usuario } = useAuth()       // quién está logueado (null si nadie)
   const [items, setItems] = useState([])
 
+  /* ── Función reutilizable para cargar/recargar el carrito ──────────────── */
+  async function cargarCarrito() {
+    if (usuario) {
+      // Logueado: leemos su carrito desde Supabase + datos del producto (join)
+      const { data } = await supabase
+        .from('carrito_items')
+        .select('cantidad, productos ( id, nombre, precio, imagen_url, tamanio, categorias ( nombre ) )')
+        .eq('usuario_id', usuario.id)
+
+      const cargados = (data || [])
+        .filter((fila) => fila.productos)
+        .map((fila) => ({
+          id: fila.productos.id,
+          nombre: fila.productos.nombre,
+          precio: fila.productos.precio,
+          imagen: fila.productos.imagen_url,
+          categoria: fila.productos.categorias?.nombre ?? '',
+          peso: fila.productos.tamanio,
+          cantidad: fila.cantidad,
+        }))
+      setItems(cargados)
+    } else {
+      const guardado = typeof window !== 'undefined' ? localStorage.getItem(CLAVE_LOCAL) : null
+      setItems(guardado ? JSON.parse(guardado) : [])
+    }
+  }
+
   /* ── CARGAR el carrito cuando cambia el usuario (login/logout) ─────────── */
   useEffect(() => {
-    async function cargar() {
-      if (usuario) {
-        // Logueado: leemos su carrito desde Supabase + datos del producto (join)
-        const { data } = await supabase
-          .from('carrito_items')
-          .select('cantidad, productos ( id, nombre, precio, imagen_url, tamanio, categorias ( nombre ) )')
-          .eq('usuario_id', usuario.id)
-
-        const cargados = (data || [])
-          .filter((fila) => fila.productos) // por si el producto fue borrado
-          .map((fila) => ({
-            id: fila.productos.id,
-            nombre: fila.productos.nombre,
-            precio: fila.productos.precio,
-            imagen: fila.productos.imagen_url,
-            categoria: fila.productos.categorias?.nombre ?? '',
-            peso: fila.productos.tamanio,
-            cantidad: fila.cantidad,
-          }))
-        setItems(cargados)
-      } else {
-        // Invitado: leemos del navegador
-        const guardado = typeof window !== 'undefined' ? localStorage.getItem(CLAVE_LOCAL) : null
-        setItems(guardado ? JSON.parse(guardado) : [])
-      }
-    }
-    cargar()
+    cargarCarrito()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario])
 
   /* ── GUARDAR en el navegador cuando es invitado ────────────────────────── */
@@ -128,6 +130,7 @@ export function CartProvider({ children }) {
     <CartContext.Provider value={{
       items, agregarItem, eliminarItem, actualizarCantidad,
       vaciarCarrito, totalItems, totalPrecio,
+      recargarCarrito: cargarCarrito,
     }}>
       {children}
     </CartContext.Provider>
