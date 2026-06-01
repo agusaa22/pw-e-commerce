@@ -56,7 +56,9 @@ export default function CuentaPage() {
     const { error } = await actualizarPerfil({ nombre, telefono, direccion })
     setGuardando(false)
     if (error) {
-      setErrorPerfil('No se pudo guardar. Probá de nuevo.')
+      console.error('Error al guardar perfil:', error)
+      // Mostramos el mensaje REAL de Supabase así sabemos qué falla.
+      setErrorPerfil('No se pudo guardar: ' + (error.message || JSON.stringify(error)))
       return
     }
     setOkPerfil('Datos guardados correctamente. ✓')
