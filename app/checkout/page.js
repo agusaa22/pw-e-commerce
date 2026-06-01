@@ -100,6 +100,9 @@ export default function CheckoutPage() {
     email: '',
     direccion: '',
     tarjeta: '',
+    titular: '',
+    vencimiento: '',
+    cvv: '',
   })
 
   /*
@@ -117,18 +120,37 @@ export default function CheckoutPage() {
   const [confirmado, setConfirmado] = useState(false)
 
   /*
-    EVENTO: handleChange — igual que en ContactForm.
-    Se ejecuta cada vez que el usuario escribe en un campo.
-    [name]: value es "computed property name" de ES6.
+    EVENTO: handleChange — para campos comunes (texto / email).
+    Para los campos de la tarjeta usamos handlers específicos abajo que
+    formatean el contenido a medida que el usuario escribe.
   */
   function handleChange(e) {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
+    if (errores[name]) setErrores(prev => ({ ...prev, [name]: '' }))
+  }
 
-    // Limpia el error del campo cuando el usuario escribe
-    if (errores[name]) {
-      setErrores(prev => ({ ...prev, [name]: '' }))
-    }
+  // Formatea el número de tarjeta como "1234 5678 9012 3456" mientras escribís
+  function handleTarjeta(e) {
+    let solo = e.target.value.replace(/\D/g, '').slice(0, 16)
+    let conEspacios = solo.replace(/(\d{4})(?=\d)/g, '$1 ')
+    setForm(prev => ({ ...prev, tarjeta: conEspacios }))
+    if (errores.tarjeta) setErrores(prev => ({ ...prev, tarjeta: '' }))
+  }
+
+  // Formatea el vencimiento como "MM/YY"
+  function handleVencimiento(e) {
+    let solo = e.target.value.replace(/\D/g, '').slice(0, 4)
+    let formato = solo.length > 2 ? solo.slice(0, 2) + '/' + solo.slice(2) : solo
+    setForm(prev => ({ ...prev, vencimiento: formato }))
+    if (errores.vencimiento) setErrores(prev => ({ ...prev, vencimiento: '' }))
+  }
+
+  // CVV: 3 dígitos
+  function handleCVV(e) {
+    let solo = e.target.value.replace(/\D/g, '').slice(0, 4)
+    setForm(prev => ({ ...prev, cvv: solo }))
+    if (errores.cvv) setErrores(prev => ({ ...prev, cvv: '' }))
   }
 
   /*
@@ -162,11 +184,24 @@ export default function CheckoutPage() {
       nuevosErrores.metodoPago = 'Elegí un método de pago'
     }
 
-    if (metodoPago === 'debito') {
-      if (!form.tarjeta.trim()) {
-        nuevosErrores.tarjeta = 'El número de tarjeta es obligatorio'
-      } else if (form.tarjeta.replace(/\s/g, '').length < 16) {
-        nuevosErrores.tarjeta = 'Ingresá los 16 dígitos de la tarjeta'
+    if (metodoPago === 'tarjeta') {
+      const tarjetaLimpia = form.tarjeta.replace(/\s/g, '')
+      if (!tarjetaLimpia) {
+        nuevosErrores.tarjeta = 'Ingresá el número de tarjeta'
+      } else if (tarjetaLimpia.length < 16) {
+        nuevosErrores.tarjeta = 'Ingresá los 16 dígitos'
+      }
+      if (!form.titular.trim()) {
+        nuevosErrores.titular = 'Ingresá el nombre del titular'
+      }
+      if (!/^\d{2}\/\d{2}$/.test(form.vencimiento)) {
+        nuevosErrores.vencimiento = 'Formato MM/YY'
+      } else {
+        const [mm] = form.vencimiento.split('/').map(Number)
+        if (mm < 1 || mm > 12) nuevosErrores.vencimiento = 'Mes inválido'
+      }
+      if (!/^\d{3,4}$/.test(form.cvv)) {
+        nuevosErrores.cvv = 'CVV inválido'
       }
     }
 
@@ -196,9 +231,9 @@ export default function CheckoutPage() {
       return
     }
 
-    // 3. Crear la orden en Supabase
+    // 3. Crear la orden en Supabase (queda en estado "pendiente")
     setProcesando(true)
-    const { error } = await crearOrden({
+    const { orden, error } = await crearOrden({
       usuario,
       items,
       total: totalPrecio,
@@ -209,15 +244,37 @@ export default function CheckoutPage() {
         metodoPago,
       },
     })
-    setProcesando(false)
 
     if (error) {
+      setProcesando(false)
       setErrores({ general: 'No pudimos procesar tu compra. Intentá de nuevo.' })
       console.error('Error al crear orden:', error)
       return
     }
 
-    // 4. Éxito: vaciamos el carrito y mostramos confirmación
+    // 4. Si eligió MERCADO PAGO → crear preferencia y redirigir a su checkout
+    if (metodoPago === 'mercadopago') {
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ordenId: orden.id, items }),
+        })
+        const data = await res.json()
+        if (!res.ok || !data.url) throw new Error(data.error || 'No se pudo iniciar el pago')
+        // Redirigimos a Mercado Pago. El webhook actualizará la orden cuando se confirme.
+        window.location.href = data.url
+        return
+      } catch (err) {
+        setProcesando(false)
+        setErrores({ general: 'No pudimos conectar con Mercado Pago. Intentá de nuevo.' })
+        console.error(err)
+        return
+      }
+    }
+
+    // 5. Para tarjeta o efectivo: mostramos confirmación local y vaciamos el carrito
+    setProcesando(false)
     setConfirmado(true)
     vaciarCarrito()
   }
@@ -357,78 +414,187 @@ export default function CheckoutPage() {
               </div>
 
               {/* ── MÉTODO DE PAGO ──────────────────────────────────── */}
-              {/*
-                QUÉ HACE: El usuario elige cómo quiere pagar.
-                POR QUÉ <select>: es el elemento HTML estándar para
-                elegir UNA opción de una lista. Más accesible que
-                botones custom porque los lectores de pantalla lo
-                reconocen automáticamente como "lista desplegable".
-
-                onChange: cada vez que el usuario cambia la opción,
-                actualizamos el estado metodoPago con setMetodoPago.
-                e.target.value contiene el valor de la opción elegida
-                (ej: "efectivo", "mercadopago", "debito").
-              */}
               <h2 className={styles.seccionTitulo}>Método de pago</h2>
 
-              <div className={styles.campo}>
-                <label htmlFor="ch-metodo">Elegí cómo pagar</label>
-                <select
-                  id="ch-metodo"
-                  value={metodoPago}
-                  onChange={(e) => setMetodoPago(e.target.value)}
-                  className={styles.select}
-                  aria-invalid={errores.metodoPago ? 'true' : 'false'}
-                  aria-describedby={errores.metodoPago ? 'error-ch-metodo' : undefined}
-                >
-                  {/*
-                    La primera opción tiene value="" y está deshabilitada.
-                    POR QUÉ: Actúa como placeholder — le indica al usuario
-                    que debe elegir una opción. Al estar disabled, no se
-                    puede seleccionar una vez que eligió otra.
-                  */}
-                  <option value="" disabled>— Seleccioná un método —</option>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="mercadopago">Mercado Pago</option>
-                  <option value="debito">Tarjeta de débito</option>
-                </select>
-                {errores.metodoPago && (
-                  <span id="error-ch-metodo" className={styles.error} aria-live="polite">
-                    {errores.metodoPago}
-                  </span>
-                )}
-              </div>
-
-              {/* ── CAMPO TARJETA (condicional) ──────────────────────── */}
               {/*
-                RENDERIZADO CONDICIONAL: este campo SOLO aparece si el
-                usuario eligió "debito" como método de pago.
-                POR QUÉ: No tiene sentido pedir número de tarjeta si
-                va a pagar en efectivo o por Mercado Pago.
-
-                metodoPago === 'debito' && (...) es un patrón de React:
-                si la condición es true, renderiza lo que está después del &&.
-                Si es false, no renderiza nada.
+                3 tarjetas clickeables (tipo "radio") en vez de un dropdown
+                gris. Cada una con su ícono y descripción.
               */}
-              {metodoPago === 'debito' && (
-                <div className={styles.campo}>
-                  <label htmlFor="ch-tarjeta">Número de tarjeta</label>
-                  <input
-                    id="ch-tarjeta"
-                    name="tarjeta"
-                    type="text"
-                    placeholder="1234 5678 9012 3456"
-                    value={form.tarjeta}
-                    onChange={handleChange}
-                    maxLength={19}
-                    aria-invalid={errores.tarjeta ? 'true' : 'false'}
-                    aria-describedby={errores.tarjeta ? 'error-ch-tarjeta' : undefined}
-                  />
-                  {errores.tarjeta && (
-                    <span id="error-ch-tarjeta" className={styles.error} aria-live="polite">
-                      {errores.tarjeta}
-                    </span>
-                  )}
+              <div className={styles.metodosGrid} role="radiogroup" aria-label="Método de pago">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={metodoPago === 'tarjeta'}
+                  className={`${styles.metodoCard} ${metodoPago === 'tarjeta' ? styles.metodoCardActivo : ''}`}
+                  onClick={() => { setMetodoPago('tarjeta'); setErrores(p => ({ ...p, metodoPago: '' })) }}
+                >
+                  <svg className={styles.metodoIcono} viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="2" y="5" width="20" height="14" rx="2.5" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                  </svg>
+                  <div>
+                    <strong>Tarjeta</strong>
+                    <small>Crédito o débito</small>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={metodoPago === 'mercadopago'}
+                  className={`${styles.metodoCard} ${metodoPago === 'mercadopago' ? styles.metodoCardActivo : ''}`}
+                  onClick={() => { setMetodoPago('mercadopago'); setErrores(p => ({ ...p, metodoPago: '' })) }}
+                >
+                  <svg className={styles.metodoIcono} viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M7 13c2 2 8 2 10 0" />
+                  </svg>
+                  <div>
+                    <strong>Mercado Pago</strong>
+                    <small>QR, dinero en cuenta o tarjeta</small>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={metodoPago === 'efectivo'}
+                  className={`${styles.metodoCard} ${metodoPago === 'efectivo' ? styles.metodoCardActivo : ''}`}
+                  onClick={() => { setMetodoPago('efectivo'); setErrores(p => ({ ...p, metodoPago: '' })) }}
+                >
+                  <svg className={styles.metodoIcono} viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <div>
+                    <strong>Efectivo</strong>
+                    <small>Pagás al recibir</small>
+                  </div>
+                </button>
+              </div>
+              {errores.metodoPago && (
+                <span className={styles.error} aria-live="polite">{errores.metodoPago}</span>
+              )}
+
+              {/* ── DETALLE SEGÚN EL MÉTODO ELEGIDO ───────────────────── */}
+
+              {/* TARJETA: form completo + tarjeta visual en tiempo real */}
+              {metodoPago === 'tarjeta' && (
+                <div className={styles.tarjetaSeccion}>
+                  {/* Tarjeta visual (preview) */}
+                  <div className={styles.tarjetaVisual} aria-hidden="true">
+                    <div className={styles.tarjetaChip}></div>
+                    <div className={styles.tarjetaNumero}>
+                      {(form.tarjeta || '•••• •••• •••• ••••').padEnd(19, ' ')}
+                    </div>
+                    <div className={styles.tarjetaFila}>
+                      <div>
+                        <small>Titular</small>
+                        <div className={styles.tarjetaTitular}>
+                          {form.titular.toUpperCase() || 'TU NOMBRE'}
+                        </div>
+                      </div>
+                      <div>
+                        <small>Vence</small>
+                        <div>{form.vencimiento || 'MM/YY'}</div>
+                      </div>
+                    </div>
+                    <div className={styles.tarjetaMarca}>AUREVIA</div>
+                  </div>
+
+                  {/* Form de la tarjeta */}
+                  <div className={styles.tarjetaForm}>
+                    <div className={styles.campo}>
+                      <label htmlFor="ch-tarjeta">Número de tarjeta</label>
+                      <input
+                        id="ch-tarjeta"
+                        name="tarjeta"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1234 5678 9012 3456"
+                        value={form.tarjeta}
+                        onChange={handleTarjeta}
+                        maxLength={19}
+                        aria-invalid={errores.tarjeta ? 'true' : 'false'}
+                      />
+                      {errores.tarjeta && <span className={styles.error}>{errores.tarjeta}</span>}
+                    </div>
+
+                    <div className={styles.campo}>
+                      <label htmlFor="ch-titular">Titular</label>
+                      <input
+                        id="ch-titular"
+                        name="titular"
+                        type="text"
+                        placeholder="Como figura en la tarjeta"
+                        value={form.titular}
+                        onChange={handleChange}
+                        aria-invalid={errores.titular ? 'true' : 'false'}
+                      />
+                      {errores.titular && <span className={styles.error}>{errores.titular}</span>}
+                    </div>
+
+                    <div className={styles.filaCorta}>
+                      <div className={styles.campo}>
+                        <label htmlFor="ch-venc">Vencimiento</label>
+                        <input
+                          id="ch-venc"
+                          name="vencimiento"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="MM/YY"
+                          value={form.vencimiento}
+                          onChange={handleVencimiento}
+                          maxLength={5}
+                          aria-invalid={errores.vencimiento ? 'true' : 'false'}
+                        />
+                        {errores.vencimiento && <span className={styles.error}>{errores.vencimiento}</span>}
+                      </div>
+                      <div className={styles.campo}>
+                        <label htmlFor="ch-cvv">CVV</label>
+                        <input
+                          id="ch-cvv"
+                          name="cvv"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="123"
+                          value={form.cvv}
+                          onChange={handleCVV}
+                          maxLength={4}
+                          aria-invalid={errores.cvv ? 'true' : 'false'}
+                        />
+                        {errores.cvv && <span className={styles.error}>{errores.cvv}</span>}
+                      </div>
+                    </div>
+
+                    <p className={styles.seguridad}>
+                      🔒 Conexión segura. No guardamos los datos de tu tarjeta.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* MERCADO PAGO: info de redirección */}
+              {metodoPago === 'mercadopago' && (
+                <div className={styles.infoCard}>
+                  <strong>Vas a ser redirigido a Mercado Pago</strong>
+                  <p>
+                    Al confirmar la compra te llevamos al sitio seguro de Mercado Pago para
+                    completar el pago con QR, dinero en cuenta o tarjeta. Una vez aprobado,
+                    volvés a AUREVIA con la confirmación de tu pedido.
+                  </p>
+                </div>
+              )}
+
+              {/* EFECTIVO: info de cómo se paga al recibir */}
+              {metodoPago === 'efectivo' && (
+                <div className={styles.infoCard}>
+                  <strong>Pagás cuando recibís el pedido</strong>
+                  <p>
+                    Confirmamos tu compra y coordinamos la entrega por email. Tenés que
+                    tener el importe exacto ({formatPrecio(totalPrecio)}) al momento de recibir
+                    el pedido.
+                  </p>
                 </div>
               )}
 

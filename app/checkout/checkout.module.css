@@ -284,3 +284,214 @@
     position: static;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MÉTODO DE PAGO PROFESIONAL
+   3 tarjetas clickeables + form de tarjeta con preview visual
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.metodosGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.metodoCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: var(--color-blanco, #fff);
+  border: 2px solid #e6e6e6;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: #1a1a1a;
+  transition: all 0.18s ease;
+}
+
+.metodoCard:hover {
+  border-color: #c2a3a3;
+  transform: translateY(-1px);
+}
+
+.metodoCardActivo {
+  border-color: var(--color-rosa-dark, #b87689);
+  background-color: rgba(214, 143, 162, 0.06);
+  box-shadow: 0 4px 14px rgba(184, 118, 137, 0.18);
+}
+
+.metodoIcono {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.metodoCard strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.metodoCard small {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* ── Sección de tarjeta (preview + form) ── */
+.tarjetaSeccion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 8px;
+  align-items: start;
+}
+
+/* Tarjeta visual estilo plástico real */
+.tarjetaVisual {
+  background: linear-gradient(135deg, #1a1a1a 0%, #3a2a2a 50%, #5a3a3a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  font-family: 'Courier New', 'Menlo', monospace;
+  letter-spacing: 1px;
+}
+
+.tarjetaVisual::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(214, 143, 162, 0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.tarjetaChip {
+  width: 42px;
+  height: 32px;
+  background: linear-gradient(135deg, #d4af6a 0%, #b08a4f 100%);
+  border-radius: 6px;
+  position: relative;
+}
+
+.tarjetaChip::before,
+.tarjetaChip::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.tarjetaChip::before { top: 10px; }
+.tarjetaChip::after  { bottom: 10px; }
+
+.tarjetaNumero {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  margin: 6px 0;
+}
+
+.tarjetaFila {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 12px;
+}
+
+.tarjetaFila small {
+  display: block;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.65;
+  margin-bottom: 2px;
+}
+
+.tarjetaTitular {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tarjetaMarca {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-family: var(--fuente-serif, serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #f7d4dd;
+}
+
+/* Form de la tarjeta a la derecha */
+.tarjetaForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filaCorta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.seguridad {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #2a7d3a;
+  background-color: #eaf6ec;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+/* Info card (Mercado Pago / efectivo) */
+.infoCard {
+  margin-top: 10px;
+  padding: 16px 18px;
+  background-color: #fbf6f2;
+  border: 1px dashed #d8c3c3;
+  border-radius: 12px;
+}
+
+.infoCard strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #1a1a1a;
+}
+
+.infoCard p {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .metodosGrid { grid-template-columns: 1fr; }
+  .tarjetaSeccion { grid-template-columns: 1fr; }
+}
+
