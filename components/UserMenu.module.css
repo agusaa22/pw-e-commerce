@@ -42,14 +42,21 @@
   color: inherit;
 }
 
+/* Admin: mismo tamaño que Pedidos/Salir pero con color rosa para destacarse */
 .adminLink {
+  font-family: inherit;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   color: var(--color-rosa-dark, #b87689);
-  padding: 4px 10px;
-  border-radius: 999px;
+  background: none;
   border: 1px solid var(--color-rosa-dark, #b87689);
-  font-size: 13px;
+  border-radius: 999px;
+  padding: 4px 12px;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .adminLink:hover {
@@ -57,31 +64,46 @@
   color: #fff;
 }
 
+/* Mismo estilo exacto que .salir para que queden idénticos */
 .linkPedidos {
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
   color: inherit;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid #ccc;
-  transition: background-color 0.2s ease;
-}
-
-.linkPedidos:hover {
-  background-color: #f3f3f3;
-}
-
-.salir {
-  font-family: inherit;
-  font-size: 13px;
   background: none;
   border: 1px solid #ccc;
   border-radius: 999px;
   padding: 4px 12px;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.linkPedidos:hover {
+  background-color: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+/* Mismo estilo exacto que .linkPedidos para que queden idénticos */
+.salir {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
   color: inherit;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  padding: 4px 12px;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .salir:hover {
