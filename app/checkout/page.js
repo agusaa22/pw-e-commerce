@@ -296,13 +296,22 @@ export default function CheckoutPage() {
           <div className="container">
             <div className={styles.exito} role="alert">
               <h1>¡Compra confirmada!</h1>
-              <p>Gracias por tu compra. Podés revisar el detalle del pedido desde tu cuenta.</p>
-              <button
-                className={styles.btnVolver}
-                onClick={() => router.push('/')}
-              >
-                Volver al inicio
-              </button>
+              <p>Gracias por tu compra. Podés ver el detalle del pedido en <strong>Mis pedidos</strong>.</p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 20 }}>
+                <button
+                  className={styles.btnVolver}
+                  onClick={() => router.push('/mis-pedidos')}
+                >
+                  Ver mis pedidos
+                </button>
+                <button
+                  className={styles.btnVolver}
+                  onClick={() => router.push('/')}
+                  style={{ background: 'none', color: '#1a1a1a', border: '1px solid #ccc' }}
+                >
+                  Volver al inicio
+                </button>
+              </div>
             </div>
           </div>
         </main>

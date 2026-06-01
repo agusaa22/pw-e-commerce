@@ -88,7 +88,7 @@ function ContenidoExito() {
       <p>
         {esPendiente
           ? 'Tu pago está siendo procesado. El estado se actualizará apenas se confirme.'
-          : 'Gracias por tu compra. Podés revisar el detalle del pedido desde tu cuenta.'}
+          : 'Gracias por tu compra. Podés ver el detalle del pedido en'} {!esPendiente && <strong>Mis pedidos</strong>}{!esPendiente && '.'}
       </p>
       {ordenId && (
         <p style={{ marginTop: 10, opacity: 0.8 }}>
@@ -100,9 +100,14 @@ function ContenidoExito() {
           debug: {textoDebug || 'esperando...'}
         </p>
       )}
-      <Link href="/" className={styles.btnVolver}>
-        Volver al inicio
-      </Link>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 20 }}>
+        <Link href="/mis-pedidos" className={styles.btnVolver}>
+          Ver mis pedidos
+        </Link>
+        <Link href="/" className={styles.btnVolver} style={{ background: 'none', color: '#1a1a1a', border: '1px solid #ccc' }}>
+          Volver al inicio
+        </Link>
+      </div>
     </div>
   )
 }

@@ -1,0 +1,215 @@
+/*
+  Estilos de la página /mis-pedidos.
+*/
+
+.pagina {
+  min-height: 70vh;
+  padding: 40px 20px;
+  background-color: var(--color-fondo, #faf5ef);
+}
+
+.contenedor {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.titulo {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.subtitulo {
+  margin: 0 0 28px;
+  color: #666;
+  font-size: 15px;
+}
+
+/* Lista de pedidos */
+.listaPedidos {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pedido {
+  background-color: var(--color-blanco, #fff);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.pedidoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0e8e0;
+}
+
+.pedidoNumero {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.pedidoFecha {
+  font-size: 13px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Badge de estado */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: #eee;
+  color: #555;
+}
+
+.badgePagada    { background-color: #e7f5ec; color: #1e7c3a; }
+.badgePendiente { background-color: #fff4d6; color: #946a00; }
+.badgeCancelada { background-color: #fdecea; color: #b3261e; }
+.badgeEnviada   { background-color: #e3f0ff; color: #1b4f8a; }
+
+/* Items del pedido */
+.items {
+  list-style: none;
+  margin: 14px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+  color: #333;
+}
+
+.itemNombre {
+  font-weight: 500;
+}
+
+.itemCantidad {
+  color: #888;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.itemPrecio {
+  color: #1a1a1a;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Pie del pedido */
+.pedidoFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #f0e8e0;
+  margin-top: 4px;
+}
+
+.metodo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tagMetodo {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: #fbf6f2;
+  color: #5a4a3a;
+  border: 1px solid #ead5c4;
+  width: fit-content;
+}
+
+.mpId {
+  color: #888;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.total {
+  text-align: right;
+}
+
+.totalLabel {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.totalValor {
+  font-size: 20px;
+  color: #1a1a1a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Estado vacío */
+.vacio {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: var(--color-blanco, #fff);
+  border-radius: 14px;
+  color: #666;
+}
+
+.vacio p {
+  margin: 0 0 16px;
+}
+
+/* Botones de acción */
+.acciones {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.btnVolver, .btnSeguir {
+  display: inline-block;
+  padding: 11px 24px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btnVolver:hover, .btnSeguir:hover {
+  opacity: 0.85;
+}
+
+.btnSeguir {
+  background: none;
+  color: var(--color-rosa-dark, #b87689);
+  border: 1px solid var(--color-rosa-dark, #b87689);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .pedido { padding: 16px; }
+  .pedidoFooter { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .total { text-align: left; }
+  .item { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .itemPrecio { font-size: 13px; }
+}

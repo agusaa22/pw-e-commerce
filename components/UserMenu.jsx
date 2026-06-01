@@ -40,6 +40,7 @@ export default function UserMenu() {
         <IconoUsuario />
       </Link>
       <span className={styles.saludo}>Hola, {perfil?.nombre || 'cuenta'}</span>
+      <Link href="/mis-pedidos" className={styles.linkPedidos}>Pedidos</Link>
       {esAdmin && (
         <Link href="/admin" className={styles.adminLink}>Admin</Link>
       )}

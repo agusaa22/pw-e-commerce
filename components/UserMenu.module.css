@@ -57,6 +57,21 @@
   color: #fff;
 }
 
+.linkPedidos {
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  color: inherit;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  transition: background-color 0.2s ease;
+}
+
+.linkPedidos:hover {
+  background-color: #f3f3f3;
+}
+
 .salir {
   font-family: inherit;
   font-size: 13px;
