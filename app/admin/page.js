@@ -47,7 +47,20 @@ export default function AdminPage() {
     setCategorias(cats || [])
   }
 
-  useEffect(() => { cargarTodo() }, [])
+  useEffect(() => {
+    cargarTodo()
+    // Refrescar cuando volvés a la pestaña (ej: después de una compra
+    // desde otra ventana). Así el stock se actualiza al instante.
+    function onVisible() {
+      if (document.visibilityState === 'visible') cargarTodo()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', cargarTodo)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', cargarTodo)
+    }
+  }, [])
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
@@ -308,9 +321,19 @@ export default function AdminPage() {
 
           {/* ── LISTA DE PRODUCTOS ─────────────────────────────────────── */}
           <section className={styles.tarjeta}>
-            <h2 className={styles.seccionTitulo}>
-              Productos en la base ({productos.length})
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <h2 className={styles.seccionTitulo} style={{ margin: 0 }}>
+                Productos en la base ({productos.length})
+              </h2>
+              <button
+                type="button"
+                onClick={cargarTodo}
+                className={styles.botonCancelar}
+                title="Recargar productos desde la base"
+              >
+                🔄 Refrescar
+              </button>
+            </div>
 
             <div className={styles.tablaWrap}>
               <table className={styles.tabla}>
