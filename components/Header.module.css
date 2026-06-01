@@ -140,19 +140,68 @@
            Media query con max-width es el enfoque "desktop-first".
 */
 @media (max-width: 768px) {
-  .headerBottom {
-    flex-direction: column;
-    gap: 20px;
+  /* En mobile: nav arriba y iconos arriba en la misma fila usando space-between */
+  .headerMain {
+    padding: 20px 0 14px;
   }
 
+  .headerBrand {
+    margin-bottom: 14px;
+  }
+
+  .brandName {
+    font-size: clamp(2.4rem, 12vw, 4rem);
+  }
+
+  /* La fila inferior queda como flex-row: iconos a la izquierda, nav a la derecha */
+  .headerBottom {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 0 4px;
+  }
+
+  /* Los iconos vuelven a posicionarse normal (no absolutos) */
   .headerActions {
     position: static;
-    justify-content: center;
+    order: 2;       /* iconos a la derecha */
+    gap: 12px;
+  }
+
+  .mainNav {
+    order: 1;       /* nav a la izquierda */
+    flex: 1;
   }
 
   .mainNav ul {
-    gap: 24px;
+    gap: 14px;
     flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .mainNav a {
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (max-width: 480px) {
+  /* En pantallas muy chicas: nav abajo, iconos arriba */
+  .headerBottom {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .headerActions {
+    order: 1;
+  }
+
+  .mainNav {
+    order: 2;
+  }
+
+  .mainNav ul {
     justify-content: center;
   }
 }

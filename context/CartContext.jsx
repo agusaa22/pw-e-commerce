@@ -24,7 +24,38 @@ export function CartProvider({ children }) {
   /* ── Función reutilizable para cargar/recargar el carrito ──────────────── */
   async function cargarCarrito() {
     if (usuario) {
-      // Logueado: leemos su carrito desde Supabase + datos del producto (join)
+      // PASO 1: Si había carrito en localStorage (invitado), lo fusionamos
+      // con el de Supabase antes de leer. Así no se pierde lo que el visitante
+      // agregó antes de loguearse.
+      if (typeof window !== 'undefined') {
+        const guardado = localStorage.getItem(CLAVE_LOCAL)
+        const carritoInvitado = guardado ? JSON.parse(guardado) : []
+        if (carritoInvitado.length > 0) {
+          // Leemos lo que ya tenía en la DB para sumar cantidades
+          const { data: actuales } = await supabase
+            .from('carrito_items')
+            .select('producto_id, cantidad')
+            .eq('usuario_id', usuario.id)
+          const mapaActual = new Map((actuales || []).map((f) => [f.producto_id, f.cantidad]))
+
+          // Para cada producto del carrito invitado, sumamos a lo que ya tenía
+          const filas = carritoInvitado.map((i) => ({
+            usuario_id: usuario.id,
+            producto_id: i.id,
+            cantidad: (mapaActual.get(i.id) || 0) + i.cantidad,
+          }))
+
+          // Upsert sube todas las filas: si existen, las actualiza; si no, las crea
+          await supabase
+            .from('carrito_items')
+            .upsert(filas, { onConflict: 'usuario_id,producto_id' })
+
+          // Limpiamos el carrito de invitado del navegador
+          localStorage.removeItem(CLAVE_LOCAL)
+        }
+      }
+
+      // PASO 2: Leemos el carrito fusionado desde Supabase con los datos del producto
       const { data } = await supabase
         .from('carrito_items')
         .select('cantidad, productos ( id, nombre, precio, imagen_url, tamanio, categorias ( nombre ) )')

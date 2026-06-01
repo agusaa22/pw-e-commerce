@@ -69,6 +69,12 @@ function ContenidoExito() {
     }
 
     confirmarYLimpiar()
+
+    // Aseguramos que el usuario vea el cartel "Compra confirmada" sin tener
+    // que scrollear (importante en mobile donde el header ocupa mucho).
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
     // Solo depende de cargandoAuth: cuando termina de cargar, dispara una vez
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cargandoAuth])
@@ -81,8 +87,8 @@ function ContenidoExito() {
       <h1>{esPendiente ? '¡Pago en proceso!' : '¡Compra confirmada!'}</h1>
       <p>
         {esPendiente
-          ? 'Tu pago está siendo procesado. Te avisamos por email cuando se confirme.'
-          : 'Gracias por tu compra. Te enviamos un email con los detalles de tu pedido.'}
+          ? 'Tu pago está siendo procesado. El estado se actualizará apenas se confirme.'
+          : 'Gracias por tu compra. Podés revisar el detalle del pedido desde tu cuenta.'}
       </p>
       {ordenId && (
         <p style={{ marginTop: 10, opacity: 0.8 }}>

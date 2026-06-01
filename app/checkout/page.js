@@ -277,6 +277,10 @@ export default function CheckoutPage() {
     setProcesando(false)
     setConfirmado(true)
     vaciarCarrito()
+    // Scrolleamos arriba para que vea el cartel de "Compra confirmada"
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   /* ── COMPRA CONFIRMADA ───────────────────────────────────────────────────── */
@@ -292,7 +296,7 @@ export default function CheckoutPage() {
           <div className="container">
             <div className={styles.exito} role="alert">
               <h1>¡Compra confirmada!</h1>
-              <p>Gracias por tu compra. Te enviamos un email con los detalles del pedido.</p>
+              <p>Gracias por tu compra. Podés revisar el detalle del pedido desde tu cuenta.</p>
               <button
                 className={styles.btnVolver}
                 onClick={() => router.push('/')}
