@@ -207,7 +207,7 @@ export default function AdminPage() {
   //  GESTIÓN DE ÓRDENES
   // ──────────────────────────────────────────────────────────────────────────
 
-  // Carga una orden en el form de edición
+  // Carga una orden en el form de edición y baja hasta él
   function editarOrden(o) {
     setEditandoOrden({
       id: o.id,
@@ -217,7 +217,11 @@ export default function AdminPage() {
       direccion_envio: o.direccion_envio ?? '',
       metodo_pago: o.metodo_pago ?? '',
     })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Esperamos a que React renderice el form para hacer scroll suave hacia él
+    setTimeout(() => {
+      const el = document.getElementById('form-editar-orden')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   // Guarda los cambios de una orden editada
@@ -573,9 +577,71 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* Lista de TODAS las órdenes */}
+          <section className={styles.tarjeta}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <h2 className={styles.seccionTitulo} style={{ margin: 0 }}>
+                Órdenes ({ordenes.length})
+              </h2>
+              {!creandoOrden && !editandoOrden.id && (
+                <button
+                  type="button"
+                  onClick={() => setCreandoOrden(true)}
+                  className={styles.botonGuardar}
+                >
+                  + Crear orden manual
+                </button>
+              )}
+            </div>
+
+            <div className={styles.tablaWrap}>
+              <table className={styles.tabla}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Método</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ordenes.map((o) => (
+                    <tr key={o.id}>
+                      <td>#{o.id}</td>
+                      <td>{new Date(o.created_at).toLocaleDateString('es-AR')}</td>
+                      <td>
+                        <div style={{ fontSize: 13 }}>{o.email || '—'}</div>
+                        {o.nombre_envio && <small style={{ color: '#888' }}>{o.nombre_envio}</small>}
+                      </td>
+                      <td>{o.metodo_pago || '—'}</td>
+                      <td>{formatPrecio(o.total)}</td>
+                      <td>
+                        <span className={`${styles.badge} ${styles['badge_' + o.estado]}`}>
+                          {o.estado}
+                        </span>
+                      </td>
+                      <td className={styles.celdaAcciones}>
+                        <button onClick={() => editarOrden(o)} className={styles.btnEditar}>Editar</button>
+                        <button onClick={() => borrarOrden(o.id)} className={styles.btnBorrar}>Borrar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {ordenes.length === 0 && (
+                <p style={{ textAlign: 'center', padding: 30, color: '#888' }}>
+                  Todavía no hay órdenes registradas.
+                </p>
+              )}
+            </div>
+          </section>
+
           {/* Formulario de EDICIÓN de orden (se muestra solo si hay una orden cargada) */}
           {editandoOrden.id && (
-            <section className={styles.tarjeta}>
+            <section id="form-editar-orden" className={styles.tarjeta}>
               <h2 className={styles.seccionTitulo}>Editar orden #{editandoOrden.id}</h2>
 
               <form onSubmit={guardarOrden} className={styles.grilla}>
@@ -764,67 +830,6 @@ export default function AdminPage() {
             </section>
           )}
 
-          {/* Lista de TODAS las órdenes */}
-          <section className={styles.tarjeta}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h2 className={styles.seccionTitulo} style={{ margin: 0 }}>
-                Órdenes ({ordenes.length})
-              </h2>
-              {!creandoOrden && !editandoOrden.id && (
-                <button
-                  type="button"
-                  onClick={() => setCreandoOrden(true)}
-                  className={styles.botonGuardar}
-                >
-                  + Crear orden manual
-                </button>
-              )}
-            </div>
-
-            <div className={styles.tablaWrap}>
-              <table className={styles.tabla}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Método</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ordenes.map((o) => (
-                    <tr key={o.id}>
-                      <td>#{o.id}</td>
-                      <td>{new Date(o.created_at).toLocaleDateString('es-AR')}</td>
-                      <td>
-                        <div style={{ fontSize: 13 }}>{o.email || '—'}</div>
-                        {o.nombre_envio && <small style={{ color: '#888' }}>{o.nombre_envio}</small>}
-                      </td>
-                      <td>{o.metodo_pago || '—'}</td>
-                      <td>{formatPrecio(o.total)}</td>
-                      <td>
-                        <span className={`${styles.badge} ${styles['badge_' + o.estado]}`}>
-                          {o.estado}
-                        </span>
-                      </td>
-                      <td className={styles.celdaAcciones}>
-                        <button onClick={() => editarOrden(o)} className={styles.btnEditar}>Editar</button>
-                        <button onClick={() => borrarOrden(o.id)} className={styles.btnBorrar}>Borrar</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {ordenes.length === 0 && (
-                <p style={{ textAlign: 'center', padding: 30, color: '#888' }}>
-                  Todavía no hay órdenes registradas.
-                </p>
-              )}
-            </div>
-          </section>
 
         </div>
       </main>
