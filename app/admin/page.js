@@ -607,13 +607,20 @@ export default function AdminPage() {
 
           {/* ── DASHBOARD DE MÉTRICAS ────────────────────────────────────
             4 stat cards calculadas en el cliente desde el array `ordenes`
-            que ya cargamos. Cero queries extra: aprovechamos los datos. */}
+            que ya cargamos. Cero queries extra: aprovechamos los datos.
+
+            INGRESOS: cuentan las "pagada" Y las "enviada" — porque una orden
+            enviada ya fue pagada antes (es un estado posterior a "pagada").
+            No incluimos "pendiente" (todavía no entró la plata) ni
+            "cancelada" (devuelta / nunca entró). */}
           {(() => {
-            const ordenesPagadas    = ordenes.filter((o) => o.estado === 'pagada')
+            const ordenesIngreso = ordenes.filter(
+              (o) => o.estado === 'pagada' || o.estado === 'enviada'
+            )
             const ordenesPendientes = ordenes.filter((o) => o.estado === 'pendiente')
-            const ingresos = ordenesPagadas.reduce((acc, o) => acc + (o.total || 0), 0)
-            const ticketPromedio = ordenesPagadas.length > 0
-              ? Math.round(ingresos / ordenesPagadas.length)
+            const ingresos = ordenesIngreso.reduce((acc, o) => acc + (o.total || 0), 0)
+            const ticketPromedio = ordenesIngreso.length > 0
+              ? Math.round(ingresos / ordenesIngreso.length)
               : 0
 
             return (
@@ -622,7 +629,7 @@ export default function AdminPage() {
                   <span className={styles.statLabel}>Ingresos totales</span>
                   <span className={styles.statValor}>{formatPrecio(ingresos)}</span>
                   <small className={styles.statHint}>
-                    {ordenesPagadas.length} {ordenesPagadas.length === 1 ? 'orden pagada' : 'órdenes pagadas'}
+                    {ordenesIngreso.length} {ordenesIngreso.length === 1 ? 'orden confirmada' : 'órdenes confirmadas'}
                   </small>
                 </div>
                 <div className={styles.stat}>
@@ -640,7 +647,7 @@ export default function AdminPage() {
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Ticket promedio</span>
                   <span className={styles.statValor}>{formatPrecio(ticketPromedio)}</span>
-                  <small className={styles.statHint}>por orden pagada</small>
+                  <small className={styles.statHint}>por orden confirmada</small>
                 </div>
               </div>
             )
