@@ -112,9 +112,13 @@ create table public.carrito_items (
 create index idx_carrito_usuario on public.carrito_items(usuario_id);
 
 -- ── ordenes (con ENUM, referencia_pago y pagado_en) ─────────────────────────
+-- usuario_id es NULLABLE para soportar órdenes de "cliente invitado" creadas
+-- desde el panel de admin (ventas presenciales o por WhatsApp).
+-- Las órdenes de la web online siempre tienen usuario_id porque /checkout
+-- exige sesión.
 create table public.ordenes (
   id              bigint generated always as identity primary key,
-  usuario_id      uuid     not null references auth.users(id) on delete cascade,
+  usuario_id      uuid     references auth.users(id) on delete cascade,
   total           integer  not null default 0,
   estado          estado_orden not null default 'pendiente',
   nombre_envio    text,

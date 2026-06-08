@@ -340,21 +340,23 @@ export default function AdminPage() {
     }
 
     try {
-      // 1) Buscar el usuario por email en perfiles
+      // 1) Buscar el usuario por email en perfiles.
+      //    Si existe → la orden queda asociada a su cuenta y la verá en /mis-pedidos.
+      //    Si NO existe → la orden se crea como "invitado" (usuario_id = null),
+      //    útil para ventas presenciales o por WhatsApp.
+      const emailTrim = nuevaOrden.email_cliente.trim()
       const { data: perfil, error: errPerfil } = await supabase
         .from('perfiles')
         .select('id, nombre, email, direccion')
-        .eq('email', nuevaOrden.email_cliente.trim())
+        .eq('email', emailTrim)
         .maybeSingle()
 
       if (errPerfil) {
         mostrarError('Error consultando el perfil: ' + errPerfil.message)
         return
       }
-      if (!perfil) {
-        mostrarError(`No existe un usuario registrado con el email "${nuevaOrden.email_cliente.trim()}". Pedile al cliente que se registre primero en la web.`)
-        return
-      }
+
+      const esInvitado = !perfil
 
       // 2) Armar el array de items con info completa (nombre + precio)
       const itemsConDatos = []
@@ -379,19 +381,26 @@ export default function AdminPage() {
         totalCalculado += prod.precio * cantidad
       }
 
-      // 3) Llamar al stored procedure crear_orden_completa (con rollback automático)
+      // 3) Llamar al stored procedure crear_orden_completa.
+      //    Si es invitado, p_usuario_id = null (la tabla acepta null gracias al patch).
       const { data, error } = await supabase.rpc('crear_orden_completa', {
-        p_usuario_id: perfil.id,
-        p_items: itemsConDatos,
-        p_total: totalCalculado,
-        p_nombre_envio: nuevaOrden.nombre_envio || perfil.nombre || '',
-        p_email: perfil.email,
-        p_direccion_envio: nuevaOrden.direccion_envio || perfil.direccion || '',
-        p_metodo_pago: nuevaOrden.metodo_pago,
+        p_usuario_id:      esInvitado ? null : perfil.id,
+        p_items:           itemsConDatos,
+        p_total:           totalCalculado,
+        p_nombre_envio:    nuevaOrden.nombre_envio || perfil?.nombre || '',
+        p_email:           perfil?.email || emailTrim,
+        p_direccion_envio: nuevaOrden.direccion_envio || perfil?.direccion || '',
+        p_metodo_pago:     nuevaOrden.metodo_pago,
       })
 
       if (error) {
-        mostrarError('Error al crear la orden: ' + error.message)
+        // Si la base rechaza por NOT NULL en usuario_id, el admin todavía no
+        // corrió el patch SQL — le damos un mensaje claro.
+        if (/usuario_id/i.test(error.message) && /null/i.test(error.message)) {
+          mostrarError('Falta correr el patch SQL "patch_ordenes_invitado.sql" en Supabase para habilitar órdenes de cliente invitado.')
+        } else {
+          mostrarError('Error al crear la orden: ' + error.message)
+        }
         return
       }
       if (!data || data.ok === false) {
@@ -399,7 +408,11 @@ export default function AdminPage() {
         return
       }
 
-      setMensajeOrden({ tipo: 'ok', texto: `Orden #${data.orden_id} creada (${data.estado}) ✓` })
+      const sufijo = esInvitado ? ' · cliente invitado' : ''
+      setMensajeOrden({
+        tipo: 'ok',
+        texto: `Orden #${data.orden_id} creada (${data.estado})${sufijo} ✓`,
+      })
       setNuevaOrden(ORDEN_VACIA)
       setCreandoOrden(false)
       cargarTodo()
@@ -666,7 +679,27 @@ export default function AdminPage() {
                       <td>#{o.id}</td>
                       <td>{new Date(o.created_at).toLocaleDateString('es-AR')}</td>
                       <td>
-                        <div style={{ fontSize: 13 }}>{o.email || '—'}</div>
+                        <div style={{ fontSize: 13 }}>
+                          {o.email || '—'}
+                          {!o.usuario_id && (
+                            <span
+                              title="Orden de cliente invitado (sin cuenta registrada)"
+                              style={{
+                                marginLeft: 8,
+                                padding: '2px 8px',
+                                fontSize: 10,
+                                fontWeight: 700,
+                                letterSpacing: '0.04em',
+                                textTransform: 'uppercase',
+                                borderRadius: 999,
+                                backgroundColor: '#f3eaf0',
+                                color: '#b87689',
+                              }}
+                            >
+                              Invitado
+                            </span>
+                          )}
+                        </div>
                         {o.nombre_envio && <small style={{ color: '#888' }}>{o.nombre_envio}</small>}
                       </td>
                       <td>{o.metodo_pago || '—'}</td>
@@ -789,7 +822,9 @@ export default function AdminPage() {
                     required
                   />
                   <small className={styles.hint}>
-                    Tiene que ser un email de un usuario ya registrado en la web.
+                    Si el email corresponde a un usuario registrado, la orden queda
+                    asociada a su cuenta. Si no, se guarda como <strong>cliente invitado</strong>
+                    (útil para ventas presenciales o por WhatsApp).
                   </small>
                 </label>
 
