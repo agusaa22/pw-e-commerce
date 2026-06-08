@@ -121,11 +121,42 @@ export default function AdminPage() {
     e.preventDefault()
     setMensaje({ tipo: '', texto: '' })
 
+    const precio = parsearEntero(form.precio)
+    const stock  = parsearEntero(form.stock)
+
+    // Validaciones amigables ANTES de mandar a la base.
+    // El tipo INTEGER de Postgres aguanta hasta 2.147.483.647. Si te pasás,
+    // la base devuelve un error genérico ("out of range for type integer").
+    // Lo capturamos acá para mostrarte un mensaje claro.
+    const MAX_INT = 2147483647
+    if (precio < 0) {
+      setMensaje({ tipo: 'error', texto: 'El precio no puede ser negativo.' })
+      return
+    }
+    if (precio > MAX_INT) {
+      setMensaje({
+        tipo: 'error',
+        texto: `El precio que ingresaste (${precio.toLocaleString('es-AR')}) es demasiado grande. El máximo soportado es $${MAX_INT.toLocaleString('es-AR')}. ¿No te sobraron ceros?`,
+      })
+      return
+    }
+    if (stock < 0) {
+      setMensaje({ tipo: 'error', texto: 'El stock no puede ser negativo.' })
+      return
+    }
+    if (stock > MAX_INT) {
+      setMensaje({
+        tipo: 'error',
+        texto: `El stock que ingresaste es demasiado grande. El máximo soportado es ${MAX_INT.toLocaleString('es-AR')} unidades.`,
+      })
+      return
+    }
+
     const datos = {
       nombre: form.nombre,
       descripcion: form.descripcion,
-      precio: parsearEntero(form.precio),
-      stock: parsearEntero(form.stock),
+      precio,
+      stock,
       categoria_id: form.categoria_id ? parsearEntero(form.categoria_id) : null,
       aroma: form.aroma,
       tamanio: form.tamanio,

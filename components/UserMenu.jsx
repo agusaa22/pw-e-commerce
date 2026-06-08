@@ -33,14 +33,19 @@ export default function UserMenu() {
     )
   }
 
-  /* ── CON SESIÓN: ícono + nombre + (admin si corresponde) + Salir ───────── */
+  /* ── CON SESIÓN: ícono + nombre + (admin si corresponde) + Salir ─────────
+     Para el admin ocultamos "Pedidos" del header: la gestión de TODAS las
+     órdenes ya está en /admin, y /mis-pedidos solo mostraría las compras
+     personales del admin (que normalmente no compra nada con esta cuenta). */
   return (
     <div className={styles.menu}>
       <Link href="/cuenta" className={styles.iconLink} aria-label="Mi cuenta">
         <IconoUsuario />
       </Link>
       <span className={styles.saludo}>Hola, {perfil?.nombre || 'cuenta'}</span>
-      <Link href="/mis-pedidos" className={styles.linkPedidos}>Pedidos</Link>
+      {!esAdmin && (
+        <Link href="/mis-pedidos" className={styles.linkPedidos}>Pedidos</Link>
+      )}
       {esAdmin && (
         <Link href="/admin" className={styles.adminLink}>Admin</Link>
       )}
