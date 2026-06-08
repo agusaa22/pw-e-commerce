@@ -23,12 +23,42 @@
   transform: translateY(-6px);
 }
 
+/* ─── Estado SIN STOCK: card más apagada para que se note de un vistazo ──── */
+.cardSinStock {
+  opacity: 0.75;
+}
+.cardSinStock:hover {
+  transform: none;
+}
+
 /* ─── LINK DE IMAGEN ─────────────────────────────────────────────────────── */
 .imagenLink {
   display: block;
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
+}
+
+/* ─── BADGE SIN STOCK ────────────────────────────────────────────────────── */
+/*
+  Cinta superpuesta sobre la imagen para marcar productos sin stock.
+  Diseño minimalista en línea con la estética rosada de Aurevia.
+*/
+.badgeSinStock {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 6px 14px;
+  background-color: rgba(26, 26, 26, 0.92);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .nombreLink {

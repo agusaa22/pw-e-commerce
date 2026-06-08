@@ -16,8 +16,28 @@ import styles from './AddToCartButton.module.css'
 export default function AddToCartButton({ producto, className }) {
   const { items, agregarItem, actualizarCantidad } = useCart()
 
+  // Stock disponible — si viene null/undefined lo tratamos como 0.
+  const stockDisponible = Number.isFinite(producto.stock) ? producto.stock : 0
+  const sinStock = stockDisponible <= 0
+
   // Buscamos si este producto ya está en el carrito
   const enCarrito = items.find((i) => i.id === producto.id)
+
+  /* ── ESTADO 0: SIN STOCK → botón deshabilitado ────────────────────────── */
+  if (sinStock) {
+    return (
+      <button
+        type="button"
+        className={className}
+        disabled
+        aria-disabled="true"
+        title="Este producto está sin stock"
+        style={{ opacity: 0.45, cursor: 'not-allowed' }}
+      >
+        Sin stock
+      </button>
+    )
+  }
 
   /* ── ESTADO 1: el producto NO está en el carrito ─────────────────────── */
   if (!enCarrito) {
@@ -32,7 +52,10 @@ export default function AddToCartButton({ producto, className }) {
     )
   }
 
-  /* ── ESTADO 2: el producto YA está → mostramos el control de cantidad ── */
+  /* ── ESTADO 2: el producto YA está → mostramos el control de cantidad ──
+     El botón "+" se deshabilita si llegaste al máximo disponible.         */
+  const llegoAlMaximo = enCarrito.cantidad >= stockDisponible
+
   return (
     <div
       className={styles.control}
@@ -55,6 +78,9 @@ export default function AddToCartButton({ producto, className }) {
         className={styles.btn}
         onClick={() => actualizarCantidad(producto.id, enCarrito.cantidad + 1)}
         aria-label="Agregar una unidad"
+        disabled={llegoAlMaximo}
+        title={llegoAlMaximo ? `Solo quedan ${stockDisponible} unidades` : undefined}
+        style={llegoAlMaximo ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
       >
         +
       </button>

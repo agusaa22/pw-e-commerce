@@ -19,17 +19,26 @@ export default function ProductCard({ producto }) {
     maximumFractionDigits: 0,
   }).format(producto.precio)
 
+  // Si el stock viene null/undefined lo tratamos como 0 para no romper
+  const stock = Number.isFinite(producto.stock) ? producto.stock : 0
+  const sinStock = stock <= 0
+
   return (
-    <article className={styles.card}>
+    <article className={`${styles.card} ${sinStock ? styles.cardSinStock : ''}`}>
 
       {/* ── IMAGEN → linkea a la página de detalle ──────────────────────── */}
-      {/* Se quita el efecto hover con segunda imagen porque solo aplicaba a 4 productos */}
       <Link href={`/productos/${producto.id}`} className={styles.imagenLink}>
         <img
           src={producto.imagen}
           alt={`${producto.nombre} — ${producto.categoria}`}
           className={styles.imagen}
         />
+        {/* Badge "SIN STOCK" sobre la imagen — solo si el stock es 0 */}
+        {sinStock && (
+          <span className={styles.badgeSinStock} aria-label="Sin stock">
+            Sin stock
+          </span>
+        )}
       </Link>
 
       {/* ── INFORMACIÓN ─────────────────────────────────────────────────── */}
@@ -46,11 +55,7 @@ export default function ProductCard({ producto }) {
         <div className={styles.footer}>
           <span className={styles.precio}>{precioFormateado}</span>
 
-          {/*
-            onClick llama a agregarItem del CartContext.
-            POR QUÉ: agregarItem actualiza el estado global, lo que
-                     re-renderiza CartIcon automáticamente con el nuevo contador.
-          */}
+          {/* AddToCartButton ya respeta el stock: si es 0, se deshabilita solo */}
           <AddToCartButton producto={producto} className={styles.boton} />
         </div>
       </div>

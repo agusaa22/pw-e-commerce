@@ -95,6 +95,10 @@ export default function ProductDetail({ id }) {
     style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
   }).format(producto.precio)
 
+  // Stock disponible y flags derivados
+  const stockDisponible = Number.isFinite(producto.stock) ? producto.stock : 0
+  const sinStock = stockDisponible <= 0
+
   return (
     <>
       <Header />
@@ -109,12 +113,33 @@ export default function ProductDetail({ id }) {
 
           <div className={styles.productoGrid}>
 
-            <div className={styles.imagenWrapper}>
+            <div className={styles.imagenWrapper} style={{ position: 'relative' }}>
               <img
                 src={producto.imagen}
                 alt={`${producto.nombre} — ${producto.categoria}`}
                 className={styles.imagen}
+                style={sinStock ? { opacity: 0.7 } : undefined}
               />
+              {sinStock && (
+                <span
+                  aria-label="Sin stock"
+                  style={{
+                    position: 'absolute',
+                    top: 18,
+                    left: 18,
+                    padding: '7px 16px',
+                    backgroundColor: 'rgba(26, 26, 26, 0.92)',
+                    color: '#fff',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    borderRadius: 999,
+                  }}
+                >
+                  Sin stock
+                </span>
+              )}
             </div>
 
             <div className={styles.info}>
@@ -126,30 +151,45 @@ export default function ProductDetail({ id }) {
               <p className={styles.descripcion}>{producto.descripcion}</p>
               <p className={styles.precio}>{precioFormateado}</p>
 
-              {/* Selector de cantidad */}
+              {/* Selector de cantidad: deshabilitado si no hay stock */}
               <div className={styles.cantidadWrapper}>
                 <span className={styles.cantidadLabel}>Cantidad</span>
-                <div className={styles.cantidadControl}>
+                <div
+                  className={styles.cantidadControl}
+                  style={sinStock ? { opacity: 0.45, pointerEvents: 'none' } : undefined}
+                >
                   <button
                     onClick={() => setCantidad(c => Math.max(1, c - 1))}
                     aria-label="Reducir cantidad"
                     className={styles.cantidadBtn}
+                    disabled={sinStock}
                   >−</button>
                   <span className={styles.cantidadNum} aria-live="polite">{cantidad}</span>
                   <button
-                    onClick={() => setCantidad(c => c + 1)}
+                    onClick={() => setCantidad(c => Math.min(stockDisponible, c + 1))}
                     aria-label="Aumentar cantidad"
                     className={styles.cantidadBtn}
+                    disabled={sinStock || cantidad >= stockDisponible}
+                    title={!sinStock && cantidad >= stockDisponible ? `Solo quedan ${stockDisponible} unidades` : undefined}
                   >+</button>
                 </div>
+                {!sinStock && stockDisponible <= 5 && (
+                  <small style={{ marginTop: 6, color: '#b87689', fontSize: 12 }}>
+                    ⚠️ Quedan solo {stockDisponible} {stockDisponible === 1 ? 'unidad' : 'unidades'}
+                  </small>
+                )}
               </div>
 
               <button
                 className={`${styles.botonAgregar} ${agregado ? styles.botonAgregado : ''}`}
                 onClick={handleAgregar}
                 aria-live="polite"
+                disabled={sinStock}
+                style={sinStock ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
               >
-                {agregado ? '✓ Agregado al carrito' : 'Agregar al carrito'}
+                {sinStock
+                  ? 'Sin stock'
+                  : (agregado ? '✓ Agregado al carrito' : 'Agregar al carrito')}
               </button>
 
               <Link href="/carrito" className={styles.irCarrito}>
