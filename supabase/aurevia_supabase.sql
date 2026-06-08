@@ -470,6 +470,13 @@ create policy "ver mis ordenes"
 create policy "crear mis ordenes"
   on public.ordenes for insert
   with check (auth.uid() = usuario_id);
+-- ⚠ ADMIN: necesario para editar estado y borrar órdenes desde /admin
+create policy "admin actualiza ordenes"
+  on public.ordenes for update
+  using (public.es_admin()) with check (public.es_admin());
+create policy "admin borra ordenes"
+  on public.ordenes for delete
+  using (public.es_admin());
 
 -- ITEMS DE ORDEN
 create policy "ver items de mis ordenes"
@@ -489,6 +496,11 @@ create policy "crear items en mis ordenes"
       where o.id = orden_id and o.usuario_id = auth.uid()
     )
   );
+-- ⚠ ADMIN: cuando se borra una orden, las orden_items caen por cascade.
+-- El cascade salta RLS, pero por si el admin quiere borrar líneas sueltas:
+create policy "admin gestiona orden_items"
+  on public.orden_items for all
+  using (public.es_admin()) with check (public.es_admin());
 
 -- FAVORITOS
 create policy "mis favoritos"

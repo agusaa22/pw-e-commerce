@@ -239,9 +239,17 @@ export default function AdminPage() {
       ...(editandoOrden.estado === 'pagada' ? { pagado_en: new Date().toISOString() } : {}),
     }
 
-    const { error } = await supabase.from('ordenes').update(datos).eq('id', editandoOrden.id)
+    const { data, error } = await supabase
+      .from('ordenes').update(datos).eq('id', editandoOrden.id).select()
     if (error) {
       setMensajeOrden({ tipo: 'error', texto: 'No se pudo actualizar: ' + error.message })
+      return
+    }
+    if (!data || data.length === 0) {
+      setMensajeOrden({
+        tipo: 'error',
+        texto: 'No se pudo actualizar (posiblemente falta la política RLS de admin). Corré el patch SQL.',
+      })
       return
     }
     setMensajeOrden({ tipo: 'ok', texto: `Orden #${editandoOrden.id} actualizada ✓` })
@@ -250,15 +258,26 @@ export default function AdminPage() {
     setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 3000)
   }
 
-  // Borrar una orden (con todos sus items por cascade)
+  // Borrar una orden. Al borrar:
+  //  - Las orden_items se borran por cascade (FK on delete cascade).
+  //  - El trigger trg_reponer_stock devuelve el stock al producto. ✓
+  //  Usamos .select() para que Supabase devuelva las filas borradas y poder
+  //  detectar cuando RLS bloquea silenciosamente la operación.
   async function borrarOrden(id) {
-    if (!confirm(`¿Seguro que querés borrar la orden #${id}? Esta acción no se puede deshacer.`)) return
-    const { error } = await supabase.from('ordenes').delete().eq('id', id)
+    if (!confirm(`¿Seguro que querés borrar la orden #${id}? El stock vuelve al producto.`)) return
+    const { data, error } = await supabase.from('ordenes').delete().eq('id', id).select()
     if (error) {
       setMensajeOrden({ tipo: 'error', texto: 'No se pudo borrar: ' + error.message })
       return
     }
-    setMensajeOrden({ tipo: 'ok', texto: `Orden #${id} borrada ✓` })
+    if (!data || data.length === 0) {
+      setMensajeOrden({
+        tipo: 'error',
+        texto: 'No se pudo borrar (posiblemente falta la política RLS de admin). Corré el patch SQL.',
+      })
+      return
+    }
+    setMensajeOrden({ tipo: 'ok', texto: `Orden #${id} borrada ✓ (stock devuelto)` })
     cargarTodo()
     setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 3000)
   }
