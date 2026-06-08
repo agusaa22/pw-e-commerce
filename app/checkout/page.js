@@ -247,7 +247,9 @@ export default function CheckoutPage() {
 
     if (error) {
       setProcesando(false)
-      setErrores({ general: 'No pudimos procesar tu compra. Intentá de nuevo.' })
+      // Mostramos el mensaje REAL devuelto por el stored procedure
+      // (ej: "Stock insuficiente para 'Rose Velvet': hay 0 disponibles, querés llevar 1")
+      setErrores({ general: error.message || 'No pudimos procesar tu compra. Intentá de nuevo.' })
       console.error('Error al crear orden:', error)
       return
     }

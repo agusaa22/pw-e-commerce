@@ -3,7 +3,8 @@
   QUÉ HACE: Después de que MP redirige al usuario a /checkout/exito,
            esta ruta:
              1. Actualiza la orden en Supabase con el estado real de MP
-                (pagada / cancelada / pendiente) y guarda el mp_payment_id.
+                (pagada / cancelada / pendiente), guarda referencia_pago
+                y setea pagado_en cuando corresponde.
              2. Borra los items del carrito del usuario (cierra el ciclo).
   POR QUÉ: Es un fallback rápido del webhook. El webhook sigue siendo la
            fuente de verdad cuando MP llama, pero esta ruta se ejecuta
@@ -23,14 +24,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Falta ordenId' }, { status: 400 })
     }
 
-    // Mapeamos el estado que devuelve MP al estado de nuestra base
+    // Mapeamos el estado que devuelve MP al ENUM estado_orden
     let estado = 'pendiente'
     if (status === 'approved') estado = 'pagada'
     else if (status === 'rejected' || status === 'cancelled') estado = 'cancelada'
     else if (status === 'in_process' || status === 'pending') estado = 'pendiente'
 
     const update = { estado }
-    if (paymentId) update.mp_payment_id = String(paymentId)
+    if (paymentId) update.referencia_pago = String(paymentId)
+    if (estado === 'pagada') update.pagado_en = new Date().toISOString()
 
     // Actualizamos la orden y pedimos que nos devuelva el usuario_id
     const { data: orden, error } = await supabaseAdmin

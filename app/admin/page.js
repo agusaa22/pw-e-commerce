@@ -29,6 +29,27 @@ function formatPrecio(precio) {
   }).format(precio)
 }
 
+// Estado inicial de creación de orden manual
+const ORDEN_VACIA = {
+  email_cliente: '',
+  productos: [], // [{ producto_id, cantidad }]
+  metodo_pago: 'efectivo',
+  nombre_envio: '',
+  direccion_envio: '',
+}
+
+// Estado inicial de edición de orden
+const EDITAR_ORDEN_VACIA = {
+  id: null,
+  estado: 'pendiente',
+  nombre_envio: '',
+  email: '',
+  direccion_envio: '',
+  metodo_pago: '',
+}
+
+const ESTADOS_ORDEN = ['pendiente', 'pagada', 'cancelada', 'enviada']
+
 export default function AdminPage() {
   const { esAdmin, cargando: cargandoAuth } = useAuth()
 
@@ -36,6 +57,13 @@ export default function AdminPage() {
   const [categorias, setCategorias] = useState([])
   const [form, setForm] = useState(FORM_VACIO)
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' })
+
+  // Órdenes
+  const [ordenes, setOrdenes] = useState([])
+  const [editandoOrden, setEditandoOrden] = useState(EDITAR_ORDEN_VACIA)
+  const [creandoOrden, setCreandoOrden] = useState(false)
+  const [nuevaOrden, setNuevaOrden] = useState(ORDEN_VACIA)
+  const [mensajeOrden, setMensajeOrden] = useState({ tipo: '', texto: '' })
 
   // Trae productos y categorías de la base
   async function cargarTodo() {
@@ -45,6 +73,17 @@ export default function AdminPage() {
 
     const { data: cats } = await supabase.from('categorias').select('*').order('nombre')
     setCategorias(cats || [])
+
+    // Cargamos todas las órdenes (admin las puede ver todas por RLS)
+    const { data: ords } = await supabase
+      .from('ordenes')
+      .select(`
+        id, total, estado, metodo_pago, created_at, pagado_en, referencia_pago,
+        nombre_envio, email, direccion_envio, usuario_id,
+        orden_items ( id, nombre_producto, precio_unitario, cantidad )
+      `)
+      .order('created_at', { ascending: false })
+    setOrdenes(ords || [])
   }
 
   useEffect(() => {
@@ -164,11 +203,164 @@ export default function AdminPage() {
     setTimeout(() => setMensaje({ tipo: '', texto: '' }), 3000)
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  //  GESTIÓN DE ÓRDENES
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // Carga una orden en el form de edición
+  function editarOrden(o) {
+    setEditandoOrden({
+      id: o.id,
+      estado: o.estado,
+      nombre_envio: o.nombre_envio ?? '',
+      email: o.email ?? '',
+      direccion_envio: o.direccion_envio ?? '',
+      metodo_pago: o.metodo_pago ?? '',
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Guarda los cambios de una orden editada
+  async function guardarOrden(e) {
+    e.preventDefault()
+    setMensajeOrden({ tipo: '', texto: '' })
+
+    const datos = {
+      estado: editandoOrden.estado,
+      nombre_envio: editandoOrden.nombre_envio,
+      email: editandoOrden.email,
+      direccion_envio: editandoOrden.direccion_envio,
+      metodo_pago: editandoOrden.metodo_pago,
+      // Si cambia a "pagada" y no tenía fecha de pago, la seteamos ahora
+      ...(editandoOrden.estado === 'pagada' ? { pagado_en: new Date().toISOString() } : {}),
+    }
+
+    const { error } = await supabase.from('ordenes').update(datos).eq('id', editandoOrden.id)
+    if (error) {
+      setMensajeOrden({ tipo: 'error', texto: 'No se pudo actualizar: ' + error.message })
+      return
+    }
+    setMensajeOrden({ tipo: 'ok', texto: `Orden #${editandoOrden.id} actualizada ✓` })
+    setEditandoOrden(EDITAR_ORDEN_VACIA)
+    cargarTodo()
+    setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 3000)
+  }
+
+  // Borrar una orden (con todos sus items por cascade)
+  async function borrarOrden(id) {
+    if (!confirm(`¿Seguro que querés borrar la orden #${id}? Esta acción no se puede deshacer.`)) return
+    const { error } = await supabase.from('ordenes').delete().eq('id', id)
+    if (error) {
+      setMensajeOrden({ tipo: 'error', texto: 'No se pudo borrar: ' + error.message })
+      return
+    }
+    setMensajeOrden({ tipo: 'ok', texto: `Orden #${id} borrada ✓` })
+    cargarTodo()
+    setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 3000)
+  }
+
+  // Agrega un producto a la orden que se está creando
+  function agregarProductoANueva() {
+    setNuevaOrden((prev) => ({
+      ...prev,
+      productos: [...prev.productos, { producto_id: '', cantidad: 1 }],
+    }))
+  }
+
+  // Modifica un producto del array en posición i
+  function modificarProductoNueva(i, campo, valor) {
+    setNuevaOrden((prev) => {
+      const nuevos = [...prev.productos]
+      nuevos[i] = { ...nuevos[i], [campo]: valor }
+      return { ...prev, productos: nuevos }
+    })
+  }
+
+  // Quita un producto del array de la orden nueva
+  function quitarProductoNueva(i) {
+    setNuevaOrden((prev) => {
+      const nuevos = prev.productos.filter((_, idx) => idx !== i)
+      return { ...prev, productos: nuevos }
+    })
+  }
+
+  // Crear una orden manualmente desde el admin (para ventas presenciales, etc.)
+  async function crearOrdenManual(e) {
+    e.preventDefault()
+    setMensajeOrden({ tipo: '', texto: '' })
+
+    if (!nuevaOrden.email_cliente) {
+      setMensajeOrden({ tipo: 'error', texto: 'Ingresá el email del cliente.' })
+      return
+    }
+    if (nuevaOrden.productos.length === 0) {
+      setMensajeOrden({ tipo: 'error', texto: 'Agregá al menos un producto.' })
+      return
+    }
+
+    // 1) Buscar el usuario por email en perfiles
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles')
+      .select('id, nombre, email, direccion')
+      .eq('email', nuevaOrden.email_cliente.trim())
+      .single()
+
+    if (errPerfil || !perfil) {
+      setMensajeOrden({ tipo: 'error', texto: 'No existe un usuario con ese email.' })
+      return
+    }
+
+    // 2) Armar el array de items con info completa (nombre + precio)
+    const itemsConDatos = []
+    let totalCalculado = 0
+    for (const item of nuevaOrden.productos) {
+      const prod = productos.find((p) => p.id === parseInt(item.producto_id))
+      if (!prod) {
+        setMensajeOrden({ tipo: 'error', texto: 'Producto inválido en la lista.' })
+        return
+      }
+      const cantidad = parseInt(item.cantidad) || 1
+      itemsConDatos.push({
+        id: prod.id,
+        nombre: prod.nombre,
+        precio: prod.precio,
+        cantidad,
+      })
+      totalCalculado += prod.precio * cantidad
+    }
+
+    // 3) Llamar al stored procedure crear_orden_completa (con rollback automático)
+    const { data, error } = await supabase.rpc('crear_orden_completa', {
+      p_usuario_id: perfil.id,
+      p_items: itemsConDatos,
+      p_total: totalCalculado,
+      p_nombre_envio: nuevaOrden.nombre_envio || perfil.nombre || '',
+      p_email: perfil.email,
+      p_direccion_envio: nuevaOrden.direccion_envio || perfil.direccion || '',
+      p_metodo_pago: nuevaOrden.metodo_pago,
+    })
+
+    if (error) {
+      setMensajeOrden({ tipo: 'error', texto: 'Error: ' + error.message })
+      return
+    }
+    if (!data || data.ok === false) {
+      setMensajeOrden({ tipo: 'error', texto: data?.error || 'No se pudo crear la orden.' })
+      return
+    }
+
+    setMensajeOrden({ tipo: 'ok', texto: `Orden #${data.orden_id} creada (${data.estado}) ✓` })
+    setNuevaOrden(ORDEN_VACIA)
+    setCreandoOrden(false)
+    cargarTodo()
+    setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 4000)
+  }
+
   // ── PROTECCIÓN ──────────────────────────────────────────────────────────
   if (cargandoAuth) {
     return (
       <>
-        <Header />
+        <Header modoAdmin={true} />
         <main className={styles.pagina}><p style={{ padding: 40 }}>Cargando...</p></main>
         <Footer />
       </>
@@ -177,7 +369,7 @@ export default function AdminPage() {
   if (!esAdmin) {
     return (
       <>
-        <Header />
+        <Header modoAdmin={true} />
         <main className={styles.pagina}>
           <div className={styles.bloqueado}>
             <h1>Acceso restringido</h1>
@@ -192,7 +384,7 @@ export default function AdminPage() {
   // ── PANEL ───────────────────────────────────────────────────────────────
   return (
     <>
-      <Header />
+      <Header modoAdmin={true} />
       <main className={styles.pagina}>
         <div className={styles.contenedor}>
 
@@ -368,6 +560,269 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </section>
+
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {/*  ÓRDENES                                                        */}
+          {/* ──────────────────────────────────────────────────────────────── */}
+
+          {mensajeOrden.texto && (
+            <div className={`${styles.aviso} ${styles[mensajeOrden.tipo]}`} role="status">
+              {mensajeOrden.texto}
+            </div>
+          )}
+
+          {/* Formulario de EDICIÓN de orden (se muestra solo si hay una orden cargada) */}
+          {editandoOrden.id && (
+            <section className={styles.tarjeta}>
+              <h2 className={styles.seccionTitulo}>Editar orden #{editandoOrden.id}</h2>
+
+              <form onSubmit={guardarOrden} className={styles.grilla}>
+                <label className={styles.campo}>
+                  <span>Estado</span>
+                  <select
+                    value={editandoOrden.estado}
+                    onChange={(e) => setEditandoOrden(p => ({ ...p, estado: e.target.value }))}
+                  >
+                    {ESTADOS_ORDEN.map((est) => (
+                      <option key={est} value={est}>{est}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={styles.campo}>
+                  <span>Método de pago</span>
+                  <select
+                    value={editandoOrden.metodo_pago}
+                    onChange={(e) => setEditandoOrden(p => ({ ...p, metodo_pago: e.target.value }))}
+                  >
+                    <option value="">— Seleccionar —</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="mercadopago">Mercado Pago</option>
+                  </select>
+                </label>
+
+                <label className={styles.campo}>
+                  <span>Nombre del envío</span>
+                  <input
+                    type="text"
+                    value={editandoOrden.nombre_envio}
+                    onChange={(e) => setEditandoOrden(p => ({ ...p, nombre_envio: e.target.value }))}
+                  />
+                </label>
+
+                <label className={styles.campo}>
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={editandoOrden.email}
+                    onChange={(e) => setEditandoOrden(p => ({ ...p, email: e.target.value }))}
+                  />
+                </label>
+
+                <label className={`${styles.campo} ${styles.campoAncho}`}>
+                  <span>Dirección de envío</span>
+                  <input
+                    type="text"
+                    value={editandoOrden.direccion_envio}
+                    onChange={(e) => setEditandoOrden(p => ({ ...p, direccion_envio: e.target.value }))}
+                  />
+                </label>
+
+                <div className={styles.acciones}>
+                  <button
+                    type="button"
+                    onClick={() => setEditandoOrden(EDITAR_ORDEN_VACIA)}
+                    className={styles.botonCancelar}
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className={styles.botonGuardar}>
+                    Guardar cambios
+                  </button>
+                </div>
+              </form>
+            </section>
+          )}
+
+          {/* Formulario de CREACIÓN de orden manual */}
+          {creandoOrden && (
+            <section className={styles.tarjeta}>
+              <h2 className={styles.seccionTitulo}>Nueva orden manual</h2>
+
+              <form onSubmit={crearOrdenManual} className={styles.grilla}>
+                <label className={`${styles.campo} ${styles.campoAncho}`}>
+                  <span>Email del cliente *</span>
+                  <input
+                    type="email"
+                    value={nuevaOrden.email_cliente}
+                    onChange={(e) => setNuevaOrden(p => ({ ...p, email_cliente: e.target.value }))}
+                    placeholder="cliente@ejemplo.com"
+                    required
+                  />
+                  <small className={styles.hint}>
+                    Tiene que ser un email de un usuario ya registrado en la web.
+                  </small>
+                </label>
+
+                <label className={styles.campo}>
+                  <span>Método de pago</span>
+                  <select
+                    value={nuevaOrden.metodo_pago}
+                    onChange={(e) => setNuevaOrden(p => ({ ...p, metodo_pago: e.target.value }))}
+                  >
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="mercadopago">Mercado Pago</option>
+                  </select>
+                </label>
+
+                <label className={styles.campo}>
+                  <span>Nombre del envío (opcional)</span>
+                  <input
+                    type="text"
+                    value={nuevaOrden.nombre_envio}
+                    onChange={(e) => setNuevaOrden(p => ({ ...p, nombre_envio: e.target.value }))}
+                    placeholder="Si no se completa, se usa el del cliente"
+                  />
+                </label>
+
+                <label className={`${styles.campo} ${styles.campoAncho}`}>
+                  <span>Dirección de envío (opcional)</span>
+                  <input
+                    type="text"
+                    value={nuevaOrden.direccion_envio}
+                    onChange={(e) => setNuevaOrden(p => ({ ...p, direccion_envio: e.target.value }))}
+                    placeholder="Si no se completa, se usa la del cliente"
+                  />
+                </label>
+
+                {/* Lista de productos a agregar */}
+                <div className={styles.campoAncho}>
+                  <span style={{ fontWeight: 500, color: '#333', fontSize: 14 }}>Productos *</span>
+                  {nuevaOrden.productos.length === 0 && (
+                    <p style={{ color: '#888', fontSize: 13, margin: '8px 0' }}>
+                      Todavía no agregaste productos. Hacé clic en "+ Agregar producto".
+                    </p>
+                  )}
+                  {nuevaOrden.productos.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
+                      <select
+                        value={item.producto_id}
+                        onChange={(e) => modificarProductoNueva(i, 'producto_id', e.target.value)}
+                        style={{ flex: 2, padding: '10px 14px', border: '1px solid #ddd', borderRadius: 10 }}
+                      >
+                        <option value="">— Seleccionar producto —</option>
+                        {productos.filter(p => p.activo).map((prod) => (
+                          <option key={prod.id} value={prod.id}>
+                            {prod.nombre} ({formatPrecio(prod.precio)}) · stock: {prod.stock}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        min={1}
+                        value={item.cantidad}
+                        onChange={(e) => modificarProductoNueva(i, 'cantidad', e.target.value)}
+                        placeholder="Cant."
+                        style={{ width: 80, padding: '10px 14px', border: '1px solid #ddd', borderRadius: 10 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => quitarProductoNueva(i)}
+                        className={styles.btnBorrar}
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={agregarProductoANueva}
+                    className={styles.botonCancelar}
+                    style={{ marginTop: 12 }}
+                  >
+                    + Agregar producto
+                  </button>
+                </div>
+
+                <div className={styles.acciones}>
+                  <button
+                    type="button"
+                    onClick={() => { setCreandoOrden(false); setNuevaOrden(ORDEN_VACIA) }}
+                    className={styles.botonCancelar}
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className={styles.botonGuardar}>
+                    Crear orden
+                  </button>
+                </div>
+              </form>
+            </section>
+          )}
+
+          {/* Lista de TODAS las órdenes */}
+          <section className={styles.tarjeta}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <h2 className={styles.seccionTitulo} style={{ margin: 0 }}>
+                Órdenes ({ordenes.length})
+              </h2>
+              {!creandoOrden && !editandoOrden.id && (
+                <button
+                  type="button"
+                  onClick={() => setCreandoOrden(true)}
+                  className={styles.botonGuardar}
+                >
+                  + Crear orden manual
+                </button>
+              )}
+            </div>
+
+            <div className={styles.tablaWrap}>
+              <table className={styles.tabla}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Método</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ordenes.map((o) => (
+                    <tr key={o.id}>
+                      <td>#{o.id}</td>
+                      <td>{new Date(o.created_at).toLocaleDateString('es-AR')}</td>
+                      <td>
+                        <div style={{ fontSize: 13 }}>{o.email || '—'}</div>
+                        {o.nombre_envio && <small style={{ color: '#888' }}>{o.nombre_envio}</small>}
+                      </td>
+                      <td>{o.metodo_pago || '—'}</td>
+                      <td>{formatPrecio(o.total)}</td>
+                      <td>
+                        <span className={`${styles.badge} ${styles['badge_' + o.estado]}`}>
+                          {o.estado}
+                        </span>
+                      </td>
+                      <td className={styles.celdaAcciones}>
+                        <button onClick={() => editarOrden(o)} className={styles.btnEditar}>Editar</button>
+                        <button onClick={() => borrarOrden(o.id)} className={styles.btnBorrar}>Borrar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {ordenes.length === 0 && (
+                <p style={{ textAlign: 'center', padding: 30, color: '#888' }}>
+                  Todavía no hay órdenes registradas.
+                </p>
+              )}
             </div>
           </section>
 

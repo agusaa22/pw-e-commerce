@@ -18,29 +18,26 @@ import CartIcon from './CartIcon'
 import UserMenu from './UserMenu'
 import styles from './Header.module.css'
 
-export default function Header() {
+export default function Header({ modoAdmin = false }) {
   return (
     /*
       <header> es una etiqueta semántica de HTML5.
-      POR QUÉ: Le dice a los lectores de pantalla y buscadores que
-      este bloque es la cabecera de la página (navegación global).
+      Si modoAdmin es true, agregamos una clase extra que achica el logo
+      y muestra un subtítulo "PANEL DE ADMIN" debajo. Útil en /admin para
+      ahorrar espacio vertical y dar contexto al usuario.
     */
-    <header className={styles.siteHeader}>
+    <header className={`${styles.siteHeader} ${modoAdmin ? styles.modoAdmin : ''}`}>
       <div className={styles.headerMain}>
         <div className="container">
 
           {/* ── LOGO ──────────────────────────────────────────────────────── */}
           <div className={styles.headerBrand}>
-            {/*
-              Link de Next.js para navegación client-side (sin reload).
-              POR QUÉ Link y no <a>:
-                - <a href="/"> recarga TODA la aplicación desde cero.
-                - Link solo renderiza el componente de la página destino.
-                Resultado: navegación instantánea y mejor experiencia.
-            */}
             <Link href="/" aria-label="Ir al inicio de Aurevia">
               <h1 className={styles.brandName}>AUREVIA</h1>
             </Link>
+            {modoAdmin && (
+              <p className={styles.adminLabel}>PANEL DE ADMIN</p>
+            )}
           </div>
 
           {/* ── NAVEGACIÓN + ICONOS ───────────────────────────────────────── */}

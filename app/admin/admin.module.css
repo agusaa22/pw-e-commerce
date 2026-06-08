@@ -231,3 +231,21 @@
   .acciones { grid-column: span 1; flex-direction: column; }
   .botonGuardar, .botonCancelar { width: 100%; }
 }
+
+/* ── Badges de estado de orden ─────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: #eee;
+  color: #555;
+}
+
+.badge_pagada    { background-color: #e7f5ec; color: #1e7c3a; }
+.badge_pendiente { background-color: #fff4d6; color: #946a00; }
+.badge_cancelada { background-color: #fdecea; color: #b3261e; }
+.badge_enviada   { background-color: #e3f0ff; color: #1b4f8a; }

@@ -64,7 +64,8 @@ export default function MisPedidosPage() {
       const { data, error } = await supabase
         .from('ordenes')
         .select(`
-          id, total, estado, metodo_pago, created_at, mp_payment_id,
+          id, total, estado, metodo_pago, created_at,
+          referencia_pago, pagado_en,
           nombre_envio, email, direccion_envio,
           orden_items ( id, nombre_producto, precio_unitario, cantidad )
         `)
@@ -147,8 +148,11 @@ export default function MisPedidosPage() {
                   <footer className={styles.pedidoFooter}>
                     <div className={styles.metodo}>
                       <span className={styles.tagMetodo}>{nombreMetodo(p.metodo_pago)}</span>
-                      {p.mp_payment_id && (
-                        <small className={styles.mpId}>ID de pago: {p.mp_payment_id}</small>
+                      {p.referencia_pago && (
+                        <small className={styles.mpId}>Ref. pago: {p.referencia_pago}</small>
+                      )}
+                      {p.pagado_en && (
+                        <small className={styles.mpId}>Pagado: {formatFecha(p.pagado_en)}</small>
                       )}
                     </div>
                     <div className={styles.total}>

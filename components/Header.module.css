@@ -45,6 +45,31 @@
   color: transparent;
 }
 
+/* ─── MODO ADMIN: logo más chico y subtítulo "PANEL DE ADMIN" ─────────── */
+.modoAdmin .headerMain {
+  padding: 18px 0 12px;
+}
+
+.modoAdmin .headerBrand {
+  margin-bottom: 14px;
+}
+
+.modoAdmin .brandName {
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  letter-spacing: 0.08em;
+}
+
+.adminLabel {
+  text-align: center;
+  margin: 4px 0 0;
+  font-family: var(--fuente-sans, inherit);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-rosa-dark, #b87689);
+}
+
 /* ─── FILA INFERIOR: nav + iconos ───────────────────────────────────────── */
 /*
   QUÉ HACE: Usa Flexbox para poner el menú al centro y los iconos a la derecha.
