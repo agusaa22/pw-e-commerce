@@ -1,23 +1,21 @@
 /*
   Estilos del menú de usuario en el header.
+  Diseño minimalista alineado al resto del menú (sin pastillas).
 */
 
-/* El ícono usa el mismo estilo que el de carrito (Header.module.css → .iconLink),
-   pero por las dudas le damos un mínimo aquí también. */
 .iconLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   color: inherit;
   text-decoration: none;
-  border-radius: 999px;
-  transition: background-color 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .iconLink:hover {
-  background-color: rgba(0, 0, 0, 0.06);
+  opacity: 0.55;
 }
 
 .icono {
@@ -33,81 +31,61 @@
 .menu {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 22px;
+  font-size: 0.88rem;
 }
 
 .saludo {
   font-weight: 500;
-  color: inherit;
+  color: var(--color-texto);
+  letter-spacing: 0.04em;
 }
 
-/* Admin: mismo tamaño que Pedidos/Salir pero con color rosa para destacarse */
+/* Links Pedidos / Salir: texto simple sin pastilla, igual que el nav principal */
+.linkPedidos,
+.salir {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-texto);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  text-transform: uppercase;
+}
+
+.linkPedidos:hover,
+.salir:hover {
+  opacity: 0.55;
+}
+
+/* Admin: misma forma pero color rosa para destacarlo (es una acción especial) */
 .adminLink {
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-decoration: none;
-  color: var(--color-rosa-dark, #b87689);
   background: none;
-  border: 1px solid var(--color-rosa-dark, #b87689);
-  border-radius: 999px;
-  padding: 4px 12px;
-  line-height: 1.4;
-  display: inline-flex;
-  align-items: center;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  border: none;
+  padding: 0;
+  color: var(--color-rosa-dark, #b87689);
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  text-transform: uppercase;
 }
 
 .adminLink:hover {
-  background-color: var(--color-rosa-dark, #b87689);
-  color: #fff;
+  opacity: 0.65;
 }
 
-/* Mismo estilo exacto que .salir para que queden idénticos */
-.linkPedidos {
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  color: inherit;
-  background: none;
-  border: 1px solid #ccc;
-  border-radius: 999px;
-  padding: 4px 12px;
-  line-height: 1.4;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.linkPedidos:hover {
-  background-color: #1a1a1a;
-  color: #fff;
-  border-color: #1a1a1a;
-}
-
-/* Mismo estilo exacto que .linkPedidos para que queden idénticos */
-.salir {
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  color: inherit;
-  background: none;
-  border: 1px solid #ccc;
-  border-radius: 999px;
-  padding: 4px 12px;
-  line-height: 1.4;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.salir:hover {
-  background-color: #1a1a1a;
-  color: #fff;
-  border-color: #1a1a1a;
+/* Responsive: en mobile chico, achicar el gap */
+@media (max-width: 480px) {
+  .menu { gap: 14px; font-size: 0.78rem; }
+  .saludo { display: none; }
+  .linkPedidos, .salir, .adminLink { font-size: 0.78rem; letter-spacing: 0.05em; }
 }
