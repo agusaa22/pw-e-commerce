@@ -613,20 +613,12 @@ export default function AdminPage() {
           </section>
 
           {/* ── LISTA DE PRODUCTOS ─────────────────────────────────────── */}
+          {/* No agregamos botón "Refrescar" porque ya hay un listener de focus +
+             visibilitychange que recarga solo al volver a la pestaña. */}
           <section className={styles.tarjeta}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <h2 className={styles.seccionTitulo} style={{ margin: 0 }}>
-                Productos en la base ({productos.length})
-              </h2>
-              <button
-                type="button"
-                onClick={cargarTodo}
-                className={styles.botonCancelar}
-                title="Recargar productos desde la base"
-              >
-                🔄 Refrescar
-              </button>
-            </div>
+            <h2 className={styles.seccionTitulo}>
+              Productos en la base ({productos.length})
+            </h2>
 
             <div className={styles.tablaWrap}>
               <table className={styles.tabla}>
