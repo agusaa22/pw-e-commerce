@@ -52,9 +52,27 @@ export default function MisPedidosPage() {
   const [pedidos, setPedidos] = useState([])
   const [cargando, setCargando] = useState(true)
 
-  // Protección: si no hay sesión, lo mandamos a login
+  // Protección: si no hay sesión, lo mandamos a login.
+  // ⚠️ IMPORTANTE: Antes de redirigir, hacemos un DOBLE CHEQUEO contra Supabase
+  // directamente. Sin esto hay una race condition: cuando venís de /checkout/exito
+  // (después de pagar con MP), el AuthContext puede tardar unos ms en hidratar
+  // la sesión desde localStorage, y mientras tanto este efecto te dispara a /login.
+  // El doble chequeo asegura que SOLO redirigimos si Supabase confirma que no hay sesión.
   useEffect(() => {
-    if (!cargandoAuth && !usuario) router.push('/login')
+    if (cargandoAuth) return // todavía cargando el contexto, esperamos
+    if (usuario) return       // hay usuario, todo OK
+
+    let cancelado = false
+    ;(async () => {
+      const { data } = await supabase.auth.getSession()
+      if (cancelado) return
+      // Si Supabase TAMPOCO tiene sesión, ahí sí mandamos a login
+      if (!data.session) router.push('/login')
+      // Si SÍ hay sesión, no hacemos nada: el AuthContext se va a actualizar solo
+      // por onAuthStateChange y este efecto correrá de nuevo con usuario != null.
+    })()
+
+    return () => { cancelado = true }
   }, [cargandoAuth, usuario, router])
 
   // Cargar pedidos del usuario logueado

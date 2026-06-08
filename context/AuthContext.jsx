@@ -24,19 +24,33 @@ export function AuthProvider({ children }) {
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
-    // 1) Al cargar la app, vemos si ya hay una sesión guardada
+    let montado = true
+
+    // 1) Al cargar la app, vemos si ya hay una sesión guardada en localStorage.
+    //    Esta es la fuente de verdad inicial — no la pisamos con un null transitorio
+    //    de onAuthStateChange.
     supabase.auth.getSession().then(({ data }) => {
+      if (!montado) return
       setUsuario(data.session?.user ?? null)
       setCargando(false)
     })
 
-    // 2) Escuchamos cambios (cuando alguien inicia o cierra sesión)
-    const { data: sub } = supabase.auth.onAuthStateChange((_evento, session) => {
+    // 2) Escuchamos cambios FUTUROS (login, logout, refresh del token).
+    //    Ignoramos el INITIAL_SESSION porque ya lo cubrió getSession arriba.
+    //    Si lo dejáramos pasar, podría disparar un setUsuario(null) transitorio
+    //    cuando todavía no se hidrató la sesión, y eso bootea al usuario a /login.
+    const { data: sub } = supabase.auth.onAuthStateChange((evento, session) => {
+      if (!montado) return
+      if (evento === 'INITIAL_SESSION') return
+      if (evento === 'TOKEN_REFRESHED' && !session) return // safety: no nulleamos por refresh
       setUsuario(session?.user ?? null)
     })
 
     // Limpiamos el "escuchador" cuando el componente se desmonta
-    return () => sub.subscription.unsubscribe()
+    return () => {
+      montado = false
+      sub.subscription.unsubscribe()
+    }
   }, [])
 
   // Cuando hay usuario, traemos su perfil (nombre y rol)

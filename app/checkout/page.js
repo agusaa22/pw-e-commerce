@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabaseClient'
 import { crearOrden } from '@/lib/ordenes'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
@@ -63,11 +64,21 @@ export default function CheckoutPage() {
   */
   const { items, totalPrecio, vaciarCarrito } = useCart()
 
-  // Protección: si no hay sesión, lo mandamos a login para que se autentique
+  // Protección: si no hay sesión, lo mandamos a login.
+  // Doble chequeo: confirmamos contra Supabase antes de redirigir, así
+  // evitamos el "logout fantasma" si el AuthContext todavía está hidratando.
   useEffect(() => {
-    if (!cargandoAuth && !usuario) {
-      router.push('/login')
-    }
+    if (cargandoAuth) return
+    if (usuario) return
+
+    let cancelado = false
+    ;(async () => {
+      const { data } = await supabase.auth.getSession()
+      if (cancelado) return
+      if (!data.session) router.push('/login')
+    })()
+
+    return () => { cancelado = true }
   }, [cargandoAuth, usuario, router])
 
   // Autocompletar el formulario con los datos del perfil (los que guardó en /cuenta)

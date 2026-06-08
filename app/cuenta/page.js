@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabaseClient'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import styles from './cuenta.module.css'
@@ -33,11 +34,22 @@ export default function CuentaPage() {
   const [okPwd, setOkPwd]                     = useState('')
   const [errorPwd, setErrorPwd]               = useState('')
 
-  // Si no hay usuario, redirigimos a /login
+  // Si no hay usuario, redirigimos a /login.
+  // Doble chequeo: confirmamos con Supabase directo antes de redirigir,
+  // así evitamos botar al usuario por una race condition del AuthContext
+  // (ver explicación en /mis-pedidos).
   useEffect(() => {
-    if (!cargando && !usuario) {
-      router.push('/login')
-    }
+    if (cargando) return
+    if (usuario) return
+
+    let cancelado = false
+    ;(async () => {
+      const { data } = await supabase.auth.getSession()
+      if (cancelado) return
+      if (!data.session) router.push('/login')
+    })()
+
+    return () => { cancelado = true }
   }, [cargando, usuario, router])
 
   // Cuando llegan los datos del perfil, los cargamos en el formulario
