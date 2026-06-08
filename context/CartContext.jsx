@@ -55,23 +55,34 @@ export function CartProvider({ children }) {
         }
       }
 
-      // PASO 2: Leemos el carrito fusionado desde Supabase con los datos del producto
+      // PASO 2: Leemos el carrito fusionado desde Supabase con los datos del producto.
+      // Incluimos "stock" para que el carrito sepa el máximo disponible y
+      // podamos deshabilitar el botón "+" cuando se alcanza el límite.
       const { data } = await supabase
         .from('carrito_items')
-        .select('cantidad, productos ( id, nombre, precio, imagen_url, tamanio, categorias ( nombre ) )')
+        .select('cantidad, productos ( id, nombre, precio, stock, imagen_url, tamanio, categorias ( nombre ) )')
         .eq('usuario_id', usuario.id)
 
       const cargados = (data || [])
         .filter((fila) => fila.productos)
-        .map((fila) => ({
-          id: fila.productos.id,
-          nombre: fila.productos.nombre,
-          precio: fila.productos.precio,
-          imagen: fila.productos.imagen_url,
-          categoria: fila.productos.categorias?.nombre ?? '',
-          peso: fila.productos.tamanio,
-          cantidad: fila.cantidad,
-        }))
+        .map((fila) => {
+          const stockProd = Number.isFinite(fila.productos.stock) ? fila.productos.stock : 0
+          // Si el stock bajó por debajo de lo que tenías en el carrito (ej:
+          // alguien más compró en el medio), capeamos para no romper la UX.
+          const cantidadCapeada = Math.min(fila.cantidad, stockProd)
+          return {
+            id: fila.productos.id,
+            nombre: fila.productos.nombre,
+            precio: fila.productos.precio,
+            stock: stockProd,
+            imagen: fila.productos.imagen_url,
+            categoria: fila.productos.categorias?.nombre ?? '',
+            peso: fila.productos.tamanio,
+            cantidad: cantidadCapeada,
+          }
+        })
+        // Sacamos del carrito los que se quedaron en 0 (porque su stock es 0)
+        .filter((it) => it.cantidad > 0)
       setItems(cargados)
     } else {
       const guardado = typeof window !== 'undefined' ? localStorage.getItem(CLAVE_LOCAL) : null
@@ -92,25 +103,34 @@ export function CartProvider({ children }) {
     }
   }, [items, usuario])
 
-  /* ── AGREGAR (CREATE/UPDATE en carrito_items) ──────────────────────────── */
+  /* ── AGREGAR (CREATE/UPDATE en carrito_items) ────────────────────────────
+     Si el producto ya está en el carrito, sumamos cantidades.
+     Capeamos al stock disponible para evitar que llegue al checkout con un
+     número que el stored procedure va a rechazar. */
   async function agregarItem(producto, cantidad = 1) {
+    const stockProd = Number.isFinite(producto.stock) ? producto.stock : Infinity
     const existente = items.find((i) => i.id === producto.id)
-    const nuevaCantidad = existente ? existente.cantidad + cantidad : cantidad
+    const sumada = existente ? existente.cantidad + cantidad : cantidad
+    const nuevaCantidad = Math.min(sumada, stockProd)
+
+    // Si no hay stock disponible, no hacemos nada (el botón ya está deshabilitado).
+    if (nuevaCantidad <= 0) return
 
     setItems((prev) => {
       if (existente) {
         return prev.map((i) =>
-          i.id === producto.id ? { ...i, cantidad: nuevaCantidad } : i
+          i.id === producto.id ? { ...i, cantidad: nuevaCantidad, stock: stockProd } : i
         )
       }
       return [...prev, {
         id: producto.id,
         nombre: producto.nombre,
         precio: producto.precio,
+        stock: stockProd,
         imagen: producto.imagen,
         categoria: producto.categoria,
         peso: producto.peso,
-        cantidad,
+        cantidad: nuevaCantidad,
       }]
     })
 
@@ -133,13 +153,19 @@ export function CartProvider({ children }) {
     }
   }
 
-  /* ── ACTUALIZAR CANTIDAD (UPDATE) ──────────────────────────────────────── */
+  /* ── ACTUALIZAR CANTIDAD (UPDATE) ────────────────────────────────────────
+     Si el nuevo valor supera el stock disponible del item, lo capeamos al
+     máximo. Si llega a 0 o menos, lo eliminamos del carrito. */
   async function actualizarCantidad(id, nuevaCantidad) {
     if (nuevaCantidad < 1) { eliminarItem(id); return }
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, cantidad: nuevaCantidad } : i)))
+    const item = items.find((i) => i.id === id)
+    const stockMax = item && Number.isFinite(item.stock) ? item.stock : Infinity
+    const cantidadFinal = Math.min(nuevaCantidad, stockMax)
+
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, cantidad: cantidadFinal } : i)))
     if (usuario) {
       await supabase.from('carrito_items')
-        .update({ cantidad: nuevaCantidad })
+        .update({ cantidad: cantidadFinal })
         .eq('usuario_id', usuario.id)
         .eq('producto_id', id)
     }

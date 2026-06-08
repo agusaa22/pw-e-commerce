@@ -113,33 +113,13 @@ export default function ProductDetail({ id }) {
 
           <div className={styles.productoGrid}>
 
-            <div className={styles.imagenWrapper} style={{ position: 'relative' }}>
+            <div className={styles.imagenWrapper}>
               <img
                 src={producto.imagen}
                 alt={`${producto.nombre} — ${producto.categoria}`}
                 className={styles.imagen}
                 style={sinStock ? { opacity: 0.7 } : undefined}
               />
-              {sinStock && (
-                <span
-                  aria-label="Sin stock"
-                  style={{
-                    position: 'absolute',
-                    top: 18,
-                    left: 18,
-                    padding: '7px 16px',
-                    backgroundColor: 'rgba(26, 26, 26, 0.92)',
-                    color: '#fff',
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.14em',
-                    textTransform: 'uppercase',
-                    borderRadius: 999,
-                  }}
-                >
-                  Sin stock
-                </span>
-              )}
             </div>
 
             <div className={styles.info}>

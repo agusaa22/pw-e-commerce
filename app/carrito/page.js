@@ -120,33 +120,50 @@ export default function CarritoPage() {
                     </p>
                   </div>
 
-                  {/* ── CONTROL DE CANTIDAD ─────────────────────────────── */}
-                  {/*
-                    Dos botones que llaman a actualizarCantidad() del Context.
-                    Cuando la cantidad cambia, el Context actualiza su estado,
-                    lo que re-renderiza este componente Y el CartIcon del Header.
-                    Eso es el poder del estado global: un cambio en un lugar
-                    se refleja automáticamente en todos los que lo leen.
+                  {/* ── CONTROL DE CANTIDAD ───────────────────────────────
+                    El botón "+" se deshabilita si la cantidad llegó al stock
+                    máximo (item.stock viene del CartContext) — así no llegamos
+                    al checkout con un número que el servidor va a rechazar.
                   */}
-                  <div className={styles.cantidadControl}>
-                    <button
-                      onClick={() => actualizarCantidad(item.id, item.cantidad - 1)}
-                      aria-label="Reducir cantidad"
-                      className={styles.cantidadBtn}
-                    >
-                      −
-                    </button>
-                    <span className={styles.cantidadNum} aria-live="polite">
-                      {item.cantidad}
-                    </span>
-                    <button
-                      onClick={() => actualizarCantidad(item.id, item.cantidad + 1)}
-                      aria-label="Aumentar cantidad"
-                      className={styles.cantidadBtn}
-                    >
-                      +
-                    </button>
-                  </div>
+                  {(() => {
+                    const stockMax = Number.isFinite(item.stock) ? item.stock : Infinity
+                    const enMaximo = item.cantidad >= stockMax
+                    return (
+                      <div className={styles.cantidadControl}>
+                        <button
+                          onClick={() => actualizarCantidad(item.id, item.cantidad - 1)}
+                          aria-label="Reducir cantidad"
+                          className={styles.cantidadBtn}
+                        >
+                          −
+                        </button>
+                        <span className={styles.cantidadNum} aria-live="polite">
+                          {item.cantidad}
+                        </span>
+                        <button
+                          onClick={() => actualizarCantidad(item.id, item.cantidad + 1)}
+                          aria-label="Aumentar cantidad"
+                          className={styles.cantidadBtn}
+                          disabled={enMaximo}
+                          title={enMaximo ? `Solo quedan ${stockMax} unidades disponibles` : undefined}
+                          style={enMaximo ? { opacity: 0.35, cursor: 'not-allowed' } : undefined}
+                        >
+                          +
+                        </button>
+                        {enMaximo && (
+                          <small style={{
+                            display: 'block',
+                            marginTop: 6,
+                            color: '#b87689',
+                            fontSize: 11,
+                            letterSpacing: '0.02em',
+                          }}>
+                            Máx. {stockMax} {stockMax === 1 ? 'unidad' : 'unidades'}
+                          </small>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   {/* Subtotal de este ítem (precio × cantidad) */}
                   <p className={styles.itemSubtotal}>
