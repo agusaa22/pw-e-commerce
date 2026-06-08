@@ -46,6 +46,8 @@ const EDITAR_ORDEN_VACIA = {
   email: '',
   direccion_envio: '',
   metodo_pago: '',
+  // Items de la orden — cada uno: { producto_id, nombre, precio_unitario, cantidad }
+  items: [],
 }
 
 const ESTADOS_ORDEN = ['pendiente', 'pagada', 'cancelada', 'enviada']
@@ -74,13 +76,14 @@ export default function AdminPage() {
     const { data: cats } = await supabase.from('categorias').select('*').order('nombre')
     setCategorias(cats || [])
 
-    // Cargamos todas las órdenes (admin las puede ver todas por RLS)
+    // Cargamos todas las órdenes (admin las puede ver todas por RLS).
+    // Incluimos producto_id en los items así podemos editarlos después.
     const { data: ords } = await supabase
       .from('ordenes')
       .select(`
         id, total, estado, metodo_pago, created_at, pagado_en, referencia_pago,
         nombre_envio, email, direccion_envio, usuario_id,
-        orden_items ( id, nombre_producto, precio_unitario, cantidad )
+        orden_items ( id, producto_id, nombre_producto, precio_unitario, cantidad )
       `)
       .order('created_at', { ascending: false })
     setOrdenes(ords || [])
@@ -247,6 +250,14 @@ export default function AdminPage() {
       email: o.email ?? '',
       direccion_envio: o.direccion_envio ?? '',
       metodo_pago: o.metodo_pago ?? '',
+      // Cargamos los items con los datos actuales para que el admin pueda
+      // modificarlos (cantidad / precio) o agregar / quitar productos.
+      items: (o.orden_items || []).map((it) => ({
+        producto_id: it.producto_id ?? '',
+        nombre: it.nombre_producto || '',
+        precio_unitario: it.precio_unitario || 0,
+        cantidad: it.cantidad || 1,
+      })),
     })
     // Esperamos a que React renderice el form para hacer scroll suave hacia él
     setTimeout(() => {
@@ -255,11 +266,112 @@ export default function AdminPage() {
     }, 50)
   }
 
-  // Guarda los cambios de una orden editada
+  // ── Helpers para editar los items de la orden ────────────────────────────
+  function agregarItemEdicion() {
+    setEditandoOrden((prev) => ({
+      ...prev,
+      items: [...prev.items, { producto_id: '', nombre: '', precio_unitario: 0, cantidad: 1 }],
+    }))
+  }
+
+  function quitarItemEdicion(i) {
+    setEditandoOrden((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, idx) => idx !== i),
+    }))
+  }
+
+  // Modificar un campo de un item. Si cambia el producto, se autocompleta
+  // nombre y precio con los datos del producto seleccionado.
+  function modificarItemEdicion(i, campo, valor) {
+    setEditandoOrden((prev) => {
+      const nuevos = [...prev.items]
+      nuevos[i] = { ...nuevos[i], [campo]: valor }
+      if (campo === 'producto_id') {
+        const prod = productos.find((p) => p.id === parseInt(valor))
+        if (prod) {
+          nuevos[i].nombre = prod.nombre
+          nuevos[i].precio_unitario = prod.precio
+        }
+      }
+      return { ...prev, items: nuevos }
+    })
+  }
+
+  // Guarda los cambios de una orden editada.
+  // Pasos:
+  //   1. Validar los items del lado del cliente (que estén completos).
+  //   2. Llamar al SP `reemplazar_items_orden` que reemplaza los items en
+  //      una transacción atómica + ajusta el stock vía triggers + recalcula
+  //      el total de la orden.
+  //   3. Actualizar los campos sueltos (estado, dirección, etc) de ordenes.
   async function guardarOrden(e) {
     e.preventDefault()
     setMensajeOrden({ tipo: '', texto: '' })
 
+    // Helper para que el mensaje sea visible aunque estés scrolleada abajo
+    const mostrarError = (texto) => {
+      setMensajeOrden({ tipo: 'error', texto })
+      setTimeout(() => {
+        const el = document.getElementById('form-editar-orden')
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 50)
+    }
+
+    // (1) Validaciones de items
+    if (!editandoOrden.items || editandoOrden.items.length === 0) {
+      mostrarError('La orden debe tener al menos un producto.')
+      return
+    }
+    for (let i = 0; i < editandoOrden.items.length; i++) {
+      const it = editandoOrden.items[i]
+      if (!it.producto_id) {
+        mostrarError(`Elegí un producto en la línea #${i + 1} del listado.`)
+        return
+      }
+      const cant = parseInt(it.cantidad) || 0
+      if (cant < 1) {
+        mostrarError(`La cantidad de la línea #${i + 1} tiene que ser al menos 1.`)
+        return
+      }
+      const precio = parseInt(it.precio_unitario) || 0
+      if (precio < 0) {
+        mostrarError(`El precio de la línea #${i + 1} no puede ser negativo.`)
+        return
+      }
+    }
+
+    // (2) Reemplazar items vía stored procedure (atómico + ajusta stock)
+    const itemsParaSP = editandoOrden.items.map((it) => {
+      const prod = productos.find((p) => p.id === parseInt(it.producto_id))
+      return {
+        id:       parseInt(it.producto_id),
+        nombre:   it.nombre || prod?.nombre || '',
+        precio:   parseInt(it.precio_unitario) || 0,
+        cantidad: parseInt(it.cantidad) || 1,
+      }
+    })
+
+    const { data: spData, error: spError } = await supabase.rpc('reemplazar_items_orden', {
+      p_orden_id: editandoOrden.id,
+      p_items:    itemsParaSP,
+    })
+
+    if (spError) {
+      // Si el SP no existe todavía, el admin no corrió el patch SQL.
+      if (/function .*reemplazar_items_orden.* does not exist/i.test(spError.message)) {
+        mostrarError('Falta correr el patch SQL "patch_editar_items_orden.sql" en Supabase.')
+      } else {
+        mostrarError('Error al reemplazar items: ' + spError.message)
+      }
+      return
+    }
+    if (!spData || spData.ok === false) {
+      mostrarError(spData?.error || 'No se pudieron actualizar los items.')
+      return
+    }
+
+    // (3) Actualizar los campos sueltos de la orden (estado, dirección, etc)
     const datos = {
       estado: editandoOrden.estado,
       nombre_envio: editandoOrden.nombre_envio,
@@ -269,24 +381,25 @@ export default function AdminPage() {
       // Si cambia a "pagada" y no tenía fecha de pago, la seteamos ahora
       ...(editandoOrden.estado === 'pagada' ? { pagado_en: new Date().toISOString() } : {}),
     }
-
     const { data, error } = await supabase
       .from('ordenes').update(datos).eq('id', editandoOrden.id).select()
     if (error) {
-      setMensajeOrden({ tipo: 'error', texto: 'No se pudo actualizar: ' + error.message })
+      mostrarError('Items actualizados, pero falló el resto: ' + error.message)
       return
     }
     if (!data || data.length === 0) {
-      setMensajeOrden({
-        tipo: 'error',
-        texto: 'No se pudo actualizar (posiblemente falta la política RLS de admin). Corré el patch SQL.',
-      })
+      mostrarError('Items actualizados, pero no se pudieron guardar los datos de envío (falta la política RLS de admin).')
       return
     }
-    setMensajeOrden({ tipo: 'ok', texto: `Orden #${editandoOrden.id} actualizada ✓` })
+
+    setMensajeOrden({
+      tipo: 'ok',
+      texto: `Orden #${editandoOrden.id} actualizada ✓ Nuevo total: ${formatPrecio(spData.total)}`,
+    })
     setEditandoOrden(EDITAR_ORDEN_VACIA)
     cargarTodo()
-    setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 3000)
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+    setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 5000)
   }
 
   // Borrar una orden. Al borrar:
@@ -846,6 +959,109 @@ export default function AdminPage() {
                     onChange={(e) => setEditandoOrden(p => ({ ...p, direccion_envio: e.target.value }))}
                   />
                 </label>
+
+                {/* ── EDITOR DE ITEMS DE LA ORDEN ────────────────────────
+                  El admin puede cambiar cantidades, precios, agregar y quitar
+                  productos. El stock se ajusta solo (triggers + stored
+                  procedure reemplazar_items_orden, todo en una transacción). */}
+                <div className={styles.campoAncho}>
+                  <span style={{ fontWeight: 500, color: '#333', fontSize: 14 }}>
+                    Productos del pedido *
+                  </span>
+                  {editandoOrden.items.length === 0 && (
+                    <p style={{ color: '#888', fontSize: 13, margin: '8px 0' }}>
+                      Esta orden no tiene productos. Agregá al menos uno.
+                    </p>
+                  )}
+                  {editandoOrden.items.map((item, i) => {
+                    const cant = parseInt(item.cantidad) || 0
+                    const precio = parseInt(item.precio_unitario) || 0
+                    const subtotal = cant * precio
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          display: 'flex',
+                          gap: 8,
+                          marginTop: 8,
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <select
+                          value={item.producto_id}
+                          onChange={(e) => modificarItemEdicion(i, 'producto_id', e.target.value)}
+                          style={{ flex: 2, minWidth: 200, padding: '10px 14px', border: '1px solid #ddd', borderRadius: 10 }}
+                          required
+                        >
+                          <option value="">— Seleccionar producto —</option>
+                          {productos.map((prod) => (
+                            <option key={prod.id} value={prod.id}>
+                              {prod.nombre} · stock: {prod.stock}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min={1}
+                          value={item.cantidad}
+                          onChange={(e) => modificarItemEdicion(i, 'cantidad', e.target.value)}
+                          placeholder="Cant."
+                          title="Cantidad"
+                          style={{ width: 70, padding: '10px 14px', border: '1px solid #ddd', borderRadius: 10 }}
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          value={item.precio_unitario}
+                          onChange={(e) => modificarItemEdicion(i, 'precio_unitario', e.target.value)}
+                          placeholder="Precio"
+                          title="Precio unitario"
+                          style={{ width: 100, padding: '10px 14px', border: '1px solid #ddd', borderRadius: 10 }}
+                        />
+                        <span style={{ minWidth: 100, fontSize: 13, color: '#555' }}>
+                          = {formatPrecio(subtotal)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => quitarItemEdicion(i)}
+                          className={styles.btnBorrar}
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    )
+                  })}
+                  <button
+                    type="button"
+                    onClick={agregarItemEdicion}
+                    className={styles.botonCancelar}
+                    style={{ marginTop: 12 }}
+                  >
+                    + Agregar producto
+                  </button>
+
+                  {/* Total recalculado en vivo */}
+                  {editandoOrden.items.length > 0 && (
+                    <p
+                      style={{
+                        marginTop: 16,
+                        paddingTop: 12,
+                        borderTop: '1px solid #eee',
+                        textAlign: 'right',
+                        fontSize: 16,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Total: {formatPrecio(
+                        editandoOrden.items.reduce(
+                          (acc, it) => acc + (parseInt(it.cantidad) || 0) * (parseInt(it.precio_unitario) || 0),
+                          0
+                        )
+                      )}
+                    </p>
+                  )}
+                </div>
 
                 <div className={styles.acciones}>
                   <button

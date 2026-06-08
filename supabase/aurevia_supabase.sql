@@ -21,6 +21,7 @@
 --  PASO 0 · LIMPIEZA
 -- ============================================================================
 drop function if exists public.crear_orden_completa(uuid, jsonb, integer, text, text, text, text) cascade;
+drop function if exists public.reemplazar_items_orden(bigint, jsonb) cascade;
 drop function if exists public.es_admin()                  cascade;
 drop function if exists public.handle_new_user()           cascade;
 drop function if exists public.set_updated_at()            cascade;
@@ -373,6 +374,94 @@ $$;
 
 
 -- ============================================================================
+--  STORED PROCEDURE · reemplazar_items_orden
+-- ----------------------------------------------------------------------------
+--  Permite al admin editar los items de una orden ya creada: cambiar cantidades,
+--  cambiar precios, agregar productos nuevos o quitar productos del pedido.
+--
+--  ATOMICIDAD: la función es transaccional (plpgsql), si cualquier paso falla
+--              hace ROLLBACK automático y el stock queda intacto.
+--
+--  AJUSTE DE STOCK: aprovecha los triggers existentes
+--    - trg_reponer_stock (on delete)     → repone stock al borrar items
+--    - trg_decrementar_stock (on insert) → descuenta stock al insertar items
+--
+--  ENTRADA: p_orden_id (bigint), p_items (jsonb: [{id, nombre, precio, cantidad}])
+--  SALIDA: { ok, orden_id, total } si OK, o { ok: false, error } si falla.
+-- ============================================================================
+create or replace function public.reemplazar_items_orden(
+  p_orden_id bigint,
+  p_items    jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_item            jsonb;
+  v_total           integer := 0;
+  v_stock_actual    integer;
+  v_producto_nombre text;
+begin
+  if not exists (select 1 from public.ordenes where id = p_orden_id) then
+    return jsonb_build_object('ok', false, 'error', 'Orden no encontrada');
+  end if;
+  if p_items is null or jsonb_array_length(p_items) = 0 then
+    return jsonb_build_object('ok', false, 'error', 'La orden debe tener al menos un item');
+  end if;
+
+  -- (1) Borrar items actuales → triggers reponen stock
+  delete from public.orden_items where orden_id = p_orden_id;
+
+  -- (2) Validar stock + datos de los items nuevos
+  for v_item in select * from jsonb_array_elements(p_items)
+  loop
+    select stock, nombre into v_stock_actual, v_producto_nombre
+    from public.productos where id = (v_item->>'id')::bigint;
+
+    if v_stock_actual is null then
+      raise exception 'Producto no encontrado: id=%', v_item->>'id';
+    end if;
+    if (v_item->>'cantidad')::integer < 1 then
+      raise exception 'La cantidad de "%" debe ser al menos 1', v_producto_nombre;
+    end if;
+    if (v_item->>'precio')::integer < 0 then
+      raise exception 'El precio de "%" no puede ser negativo', v_producto_nombre;
+    end if;
+    if v_stock_actual < (v_item->>'cantidad')::integer then
+      raise exception 'Stock insuficiente para "%": hay % unidades, querés llevar %',
+        v_producto_nombre, v_stock_actual, (v_item->>'cantidad')::integer;
+    end if;
+  end loop;
+
+  -- (3) Insertar nuevos items → triggers decrementan stock
+  for v_item in select * from jsonb_array_elements(p_items)
+  loop
+    insert into public.orden_items (
+      orden_id, producto_id, nombre_producto, precio_unitario, cantidad
+    ) values (
+      p_orden_id,
+      (v_item->>'id')::bigint,
+      v_item->>'nombre',
+      (v_item->>'precio')::integer,
+      (v_item->>'cantidad')::integer
+    );
+    v_total := v_total + (v_item->>'precio')::integer * (v_item->>'cantidad')::integer;
+  end loop;
+
+  -- (4) Actualizar total de la orden
+  update public.ordenes set total = v_total where id = p_orden_id;
+
+  return jsonb_build_object('ok', true, 'orden_id', p_orden_id, 'total', v_total);
+
+exception when others then
+  return jsonb_build_object('ok', false, 'error', SQLERRM);
+end;
+$$;
+
+
+-- ============================================================================
 --  PASO 4 · TRIGGERS
 -- ============================================================================
 
@@ -414,8 +503,10 @@ grant all on all tables in schema public to service_role;
 grant usage, select on all sequences in schema public to anon, authenticated, service_role;
 grant all on all sequences in schema public to service_role;
 
--- EXECUTE en el stored procedure para que authenticated lo pueda llamar
+-- EXECUTE en los stored procedures para que authenticated los pueda llamar
 grant execute on function public.crear_orden_completa(uuid, jsonb, integer, text, text, text, text)
+  to authenticated, service_role;
+grant execute on function public.reemplazar_items_orden(bigint, jsonb)
   to authenticated, service_role;
 
 -- Defaults para tablas futuras
