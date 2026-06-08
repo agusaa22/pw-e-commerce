@@ -312,71 +312,105 @@ export default function AdminPage() {
     e.preventDefault()
     setMensajeOrden({ tipo: '', texto: '' })
 
-    if (!nuevaOrden.email_cliente) {
-      setMensajeOrden({ tipo: 'error', texto: 'Ingresá el email del cliente.' })
+    // Validaciones del lado del cliente (mensaje claro + scroll para verlo)
+    const mostrarError = (texto) => {
+      setMensajeOrden({ tipo: 'error', texto })
+      // Scrolleamos al formulario para que el mensaje sea visible
+      setTimeout(() => {
+        const el = document.getElementById('form-crear-orden')
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 50)
+    }
+
+    if (!nuevaOrden.email_cliente.trim()) {
+      mostrarError('Ingresá el email del cliente.')
       return
     }
     if (nuevaOrden.productos.length === 0) {
-      setMensajeOrden({ tipo: 'error', texto: 'Agregá al menos un producto.' })
+      mostrarError('Agregá al menos un producto haciendo clic en "+ Agregar producto".')
+      return
+    }
+    // Chequeamos que TODAS las líneas tengan producto elegido (no "— Seleccionar —")
+    const lineaIncompleta = nuevaOrden.productos.findIndex(
+      (it) => !it.producto_id || String(it.producto_id).trim() === ''
+    )
+    if (lineaIncompleta !== -1) {
+      mostrarError(`Elegí un producto en la línea #${lineaIncompleta + 1} del listado.`)
       return
     }
 
-    // 1) Buscar el usuario por email en perfiles
-    const { data: perfil, error: errPerfil } = await supabase
-      .from('perfiles')
-      .select('id, nombre, email, direccion')
-      .eq('email', nuevaOrden.email_cliente.trim())
-      .single()
+    try {
+      // 1) Buscar el usuario por email en perfiles
+      const { data: perfil, error: errPerfil } = await supabase
+        .from('perfiles')
+        .select('id, nombre, email, direccion')
+        .eq('email', nuevaOrden.email_cliente.trim())
+        .maybeSingle()
 
-    if (errPerfil || !perfil) {
-      setMensajeOrden({ tipo: 'error', texto: 'No existe un usuario con ese email.' })
-      return
-    }
-
-    // 2) Armar el array de items con info completa (nombre + precio)
-    const itemsConDatos = []
-    let totalCalculado = 0
-    for (const item of nuevaOrden.productos) {
-      const prod = productos.find((p) => p.id === parseInt(item.producto_id))
-      if (!prod) {
-        setMensajeOrden({ tipo: 'error', texto: 'Producto inválido en la lista.' })
+      if (errPerfil) {
+        mostrarError('Error consultando el perfil: ' + errPerfil.message)
         return
       }
-      const cantidad = parseInt(item.cantidad) || 1
-      itemsConDatos.push({
-        id: prod.id,
-        nombre: prod.nombre,
-        precio: prod.precio,
-        cantidad,
+      if (!perfil) {
+        mostrarError(`No existe un usuario registrado con el email "${nuevaOrden.email_cliente.trim()}". Pedile al cliente que se registre primero en la web.`)
+        return
+      }
+
+      // 2) Armar el array de items con info completa (nombre + precio)
+      const itemsConDatos = []
+      let totalCalculado = 0
+      for (const item of nuevaOrden.productos) {
+        const prod = productos.find((p) => p.id === parseInt(item.producto_id))
+        if (!prod) {
+          mostrarError('Producto inválido en la lista. Volvé a elegirlo del dropdown.')
+          return
+        }
+        const cantidad = parseInt(item.cantidad) || 1
+        if (cantidad < 1) {
+          mostrarError(`La cantidad del producto "${prod.nombre}" debe ser al menos 1.`)
+          return
+        }
+        itemsConDatos.push({
+          id: prod.id,
+          nombre: prod.nombre,
+          precio: prod.precio,
+          cantidad,
+        })
+        totalCalculado += prod.precio * cantidad
+      }
+
+      // 3) Llamar al stored procedure crear_orden_completa (con rollback automático)
+      const { data, error } = await supabase.rpc('crear_orden_completa', {
+        p_usuario_id: perfil.id,
+        p_items: itemsConDatos,
+        p_total: totalCalculado,
+        p_nombre_envio: nuevaOrden.nombre_envio || perfil.nombre || '',
+        p_email: perfil.email,
+        p_direccion_envio: nuevaOrden.direccion_envio || perfil.direccion || '',
+        p_metodo_pago: nuevaOrden.metodo_pago,
       })
-      totalCalculado += prod.precio * cantidad
-    }
 
-    // 3) Llamar al stored procedure crear_orden_completa (con rollback automático)
-    const { data, error } = await supabase.rpc('crear_orden_completa', {
-      p_usuario_id: perfil.id,
-      p_items: itemsConDatos,
-      p_total: totalCalculado,
-      p_nombre_envio: nuevaOrden.nombre_envio || perfil.nombre || '',
-      p_email: perfil.email,
-      p_direccion_envio: nuevaOrden.direccion_envio || perfil.direccion || '',
-      p_metodo_pago: nuevaOrden.metodo_pago,
-    })
+      if (error) {
+        mostrarError('Error al crear la orden: ' + error.message)
+        return
+      }
+      if (!data || data.ok === false) {
+        mostrarError(data?.error || 'No se pudo crear la orden.')
+        return
+      }
 
-    if (error) {
-      setMensajeOrden({ tipo: 'error', texto: 'Error: ' + error.message })
-      return
+      setMensajeOrden({ tipo: 'ok', texto: `Orden #${data.orden_id} creada (${data.estado}) ✓` })
+      setNuevaOrden(ORDEN_VACIA)
+      setCreandoOrden(false)
+      cargarTodo()
+      // Scrolleamos arriba para que vea el aviso de éxito junto a la tabla
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+      setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 5000)
+    } catch (err) {
+      // Cualquier cosa inesperada (ej: error de red) la mostramos también
+      mostrarError('Error inesperado: ' + (err?.message || String(err)))
+      console.error('crearOrdenManual error:', err)
     }
-    if (!data || data.ok === false) {
-      setMensajeOrden({ tipo: 'error', texto: data?.error || 'No se pudo crear la orden.' })
-      return
-    }
-
-    setMensajeOrden({ tipo: 'ok', texto: `Orden #${data.orden_id} creada (${data.estado}) ✓` })
-    setNuevaOrden(ORDEN_VACIA)
-    setCreandoOrden(false)
-    cargarTodo()
-    setTimeout(() => setMensajeOrden({ tipo: '', texto: '' }), 4000)
   }
 
   // ── PROTECCIÓN ──────────────────────────────────────────────────────────
@@ -734,8 +768,15 @@ export default function AdminPage() {
 
           {/* Formulario de CREACIÓN de orden manual */}
           {creandoOrden && (
-            <section className={styles.tarjeta}>
+            <section id="form-crear-orden" className={styles.tarjeta}>
               <h2 className={styles.seccionTitulo}>Nueva orden manual</h2>
+
+              {/* Aviso DENTRO del form para que se vea sí o sí al darle "Crear orden" */}
+              {mensajeOrden.texto && (
+                <div className={`${styles.aviso} ${styles[mensajeOrden.tipo]}`} role="status">
+                  {mensajeOrden.texto}
+                </div>
+              )}
 
               <form onSubmit={crearOrdenManual} className={styles.grilla}>
                 <label className={`${styles.campo} ${styles.campoAncho}`}>
@@ -798,6 +839,7 @@ export default function AdminPage() {
                         value={item.producto_id}
                         onChange={(e) => modificarProductoNueva(i, 'producto_id', e.target.value)}
                         style={{ flex: 2, padding: '10px 14px', border: '1px solid #ddd', borderRadius: 10 }}
+                        required
                       >
                         <option value="">— Seleccionar producto —</option>
                         {productos.filter(p => p.activo).map((prod) => (
