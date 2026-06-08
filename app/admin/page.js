@@ -492,6 +492,47 @@ export default function AdminPage() {
           <h1 className={styles.titulo}>Panel de administración</h1>
           <p className={styles.subtitulo}>Gestioná el catálogo de AUREVIA: creá, editá y borrá productos.</p>
 
+          {/* ── DASHBOARD DE MÉTRICAS ────────────────────────────────────
+            4 stat cards calculadas en el cliente desde el array `ordenes`
+            que ya cargamos. Cero queries extra: aprovechamos los datos. */}
+          {(() => {
+            const ordenesPagadas    = ordenes.filter((o) => o.estado === 'pagada')
+            const ordenesPendientes = ordenes.filter((o) => o.estado === 'pendiente')
+            const ingresos = ordenesPagadas.reduce((acc, o) => acc + (o.total || 0), 0)
+            const ticketPromedio = ordenesPagadas.length > 0
+              ? Math.round(ingresos / ordenesPagadas.length)
+              : 0
+
+            return (
+              <div className={styles.dashboard}>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Ingresos totales</span>
+                  <span className={styles.statValor}>{formatPrecio(ingresos)}</span>
+                  <small className={styles.statHint}>
+                    {ordenesPagadas.length} {ordenesPagadas.length === 1 ? 'orden pagada' : 'órdenes pagadas'}
+                  </small>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Pedidos totales</span>
+                  <span className={styles.statValor}>{ordenes.length}</span>
+                  <small className={styles.statHint}>en toda la historia</small>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Pendientes</span>
+                  <span className={styles.statValor}>{ordenesPendientes.length}</span>
+                  <small className={styles.statHint}>
+                    {ordenesPendientes.length === 0 ? 'todo al día ✓' : 'esperando pago'}
+                  </small>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Ticket promedio</span>
+                  <span className={styles.statValor}>{formatPrecio(ticketPromedio)}</span>
+                  <small className={styles.statHint}>por orden pagada</small>
+                </div>
+              </div>
+            )
+          })()}
+
           {mensaje.texto && (
             <div className={`${styles.aviso} ${styles[mensaje.tipo]}`} role="status">
               {mensaje.texto}
