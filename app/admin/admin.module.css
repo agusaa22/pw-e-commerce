@@ -185,52 +185,47 @@
 
 .filaInactiva td { color: #aaa; }
 
+/* La celda se comporta como td normal (table-cell) para alinear vertical igual
+   que el resto de las columnas — NO flex, porque eso rompe la línea base. */
 .celdaAcciones {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: nowrap;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 /* Botones tipo "link" minimalistas — para no romper la prolijidad de la tabla */
 .btnEditar,
 .btnAlternar,
 .btnBorrar {
-  padding: 2px 0;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 14px;
+  padding: 0;
   background: none;
   border: none;
-  border-bottom: 1px solid transparent;
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  line-height: 1.2;
+  line-height: 1.4;
   cursor: pointer;
-  transition: color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+  text-decoration: none;
+  transition: opacity 0.18s ease;
 }
 
-.btnEditar {
-  color: #1a1a1a;
-}
-.btnEditar:hover {
-  border-bottom-color: #1a1a1a;
-}
-
-.btnAlternar {
-  color: #555;
-}
-.btnAlternar:hover {
-  color: #1a1a1a;
-  border-bottom-color: #1a1a1a;
+.btnEditar:last-child,
+.btnAlternar:last-child,
+.btnBorrar:last-child {
+  margin-right: 0;
 }
 
-.btnBorrar {
-  color: #b3261e;
-}
-.btnBorrar:hover {
-  border-bottom-color: #b3261e;
-}
+.btnEditar { color: #1a1a1a; }
+.btnEditar:hover { text-decoration: underline; }
+
+.btnAlternar { color: #555; }
+.btnAlternar:hover { color: #1a1a1a; text-decoration: underline; }
+
+.btnBorrar { color: #b3261e; }
+.btnBorrar:hover { text-decoration: underline; }
 
 /* Responsive */
 @media (max-width: 640px) {
