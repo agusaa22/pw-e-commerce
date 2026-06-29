@@ -8,6 +8,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import styles from './UserMenu.module.css'
 
@@ -22,6 +23,7 @@ function IconoUsuario() {
 }
 
 export default function UserMenu() {
+  const router = useRouter()
   const { usuario, perfil, esAdmin, cerrarSesion } = useAuth()
 
   /* ── SIN SESIÓN: solo el ícono, lleva a /login ─────────────────────────── */
@@ -31,6 +33,17 @@ export default function UserMenu() {
         <IconoUsuario />
       </Link>
     )
+  }
+
+  /*
+    Cierra la sesión y mueve al usuario al home.
+    POR QUÉ: si te logueás como admin y hacés "Salir" estando parada en /admin,
+    sin redirigir te queda mostrando "Acceso restringido" en la misma URL.
+    Mandándote al home queda más prolijo y evita confusión.
+  */
+  async function handleSalir() {
+    await cerrarSesion()
+    router.push('/')
   }
 
   /* ── CON SESIÓN: ícono + nombre + (admin si corresponde) + Salir ─────────
@@ -49,7 +62,7 @@ export default function UserMenu() {
       {esAdmin && (
         <Link href="/admin" className={styles.adminLink}>Admin</Link>
       )}
-      <button onClick={cerrarSesion} className={styles.salir}>Salir</button>
+      <button onClick={handleSalir} className={styles.salir}>Salir</button>
     </div>
   )
 }
